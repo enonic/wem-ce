@@ -1,6 +1,6 @@
 package com.enonic.xp.script.impl.value;
 
-import jdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.script.ScriptValue;
 import com.enonic.xp.script.impl.util.ErrorHelper;
@@ -11,9 +11,9 @@ final class FunctionScriptValue
 {
     private final ScriptValueFactory factory;
 
-    private final JSObject value;
+    private final Value value;
 
-    FunctionScriptValue( final ScriptValueFactory factory, final JSObject value )
+    FunctionScriptValue( final ScriptValueFactory factory, final Value value )
     {
         this.factory = factory;
         this.value = value;
@@ -33,7 +33,7 @@ final class FunctionScriptValue
 
         try
         {
-            final Object result = this.value.call( this.value, convertedArgs );
+            final Object result = this.value.execute( convertedArgs );
             return this.factory.newValue( result );
         }
         catch ( final Exception e )

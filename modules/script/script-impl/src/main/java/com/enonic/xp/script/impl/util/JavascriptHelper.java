@@ -1,12 +1,12 @@
 package com.enonic.xp.script.impl.util;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Value;
 
 public interface JavascriptHelper
 {
-    ScriptObjectMirror newJsArray();
+    Value newJsArray();
 
-    ScriptObjectMirror newJsObject();
+    Value newJsObject();
 
-    ScriptObjectMirror parseJson( String text );
+    Value parseJson( String text );
 }

@@ -12,7 +12,7 @@ import javax.script.SimpleBindings;
 
 import com.google.common.util.concurrent.Striped;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.app.Application;
 import com.enonic.xp.resource.Resource;
@@ -115,7 +115,7 @@ public final class ScriptExecutorImpl
         this.engine.setBindings( global, ScriptContext.GLOBAL_SCOPE );
     }
 
-    private ScriptObjectMirror buildAppInfo()
+    private Value buildAppInfo()
     {
         final ApplicationInfoBuilder builder = new ApplicationInfoBuilder();
         builder.application( this.application );
@@ -206,19 +206,19 @@ public final class ScriptExecutorImpl
         return resource.getKey().toString();
     }
 
-    private Object executeRequire( final ResourceKey key, final ScriptObjectMirror func )
+    private Object executeRequire( final ResourceKey key, final Value func )
     {
         try
         {
-            final ScriptObjectMirror exports = this.javascriptHelper.newJsObject();
+            final Value exports = this.javascriptHelper.newJsObject();
 
-            final ScriptObjectMirror module = this.javascriptHelper.newJsObject();
-            module.put( "id", key.toString() );
-            module.put( "exports", exports );
+            final Value module = this.javascriptHelper.newJsObject();
+            module.putMember( "id", key.toString() );
+            module.putMember( "exports", exports );
 
             final ScriptFunctions functions = new ScriptFunctions( key, this );
-            func.call( exports, functions.getLog(), functions.getRequire(), functions.getResolve(), functions, exports, module );
-            return module.get( "exports" );
+            func.execute( exports, functions.getLog(), functions.getRequire(), functions.getResolve(), functions, exports, module );
+            return module.getMember( "exports" );
         }
         catch ( final Exception e )
         {
@@ -236,13 +236,13 @@ public final class ScriptExecutorImpl
         return this.scriptValueFactory.newValue( value );
     }
 
-    private ScriptObjectMirror doExecute( final Bindings bindings, final Resource script )
+    private Value doExecute( final Bindings bindings, final Resource script )
     {
         try
         {
             final String text = script.readString();
             final String source = PRE_SCRIPT + text + POST_SCRIPT;
-            return (ScriptObjectMirror) this.engine.eval( source, bindings );
+            return (Value) this.engine.eval( source, bindings );
         }
         catch ( final Exception e )
         {
@@ -274,7 +274,7 @@ public final class ScriptExecutorImpl
         final SimpleBindings bindings = new SimpleBindings();
         bindings.put( ScriptEngine.FILENAME, getFileName( resource ) );
 
-        final ScriptObjectMirror func = doExecute( bindings, resource );
+        final Value func = doExecute( bindings, resource );
         final Object result = executeRequire( resource.getKey(), func );
 
         this.exportsCache.put( resource, result );

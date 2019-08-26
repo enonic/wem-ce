@@ -1,6 +1,6 @@
 package com.enonic.xp.script.impl.value;
 
-import jdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.script.ScriptValue;
 import com.enonic.xp.script.impl.util.JavascriptHelper;
@@ -35,27 +35,38 @@ public final class ScriptValueFactoryImpl
             return null;
         }
 
-        if ( value instanceof JSObject )
+
+        if ( value instanceof Value )
         {
-            return newValue( (JSObject) value );
+            Value v = (Value) value;
+            if (v.isBoolean()) {
+                return new ScalarScriptValue(v.asBoolean());
+            } else if (v.isNumber() && v.fitsInLong()) {
+                return new ScalarScriptValue(v.asLong());
+            } else if (v.isNumber() && v.fitsInDouble()) {
+                return new ScalarScriptValue(v.asDouble());
+            } else if (v.isString()) {
+                return new ScalarScriptValue(v.asString());
+            }
+            return newValue( (Value) value );
         }
 
         return new ScalarScriptValue( value );
     }
 
-    private ScriptValue newValue( final JSObject value )
+    private ScriptValue newValue( final Value value )
     {
         if ( NashornHelper.isDateType( value ) )
         {
             return new ScalarScriptValue( NashornHelper.toDate( value ) );
         }
 
-        if ( value.isFunction() )
+        if ( value.canExecute() )
         {
             return new FunctionScriptValue( this, value );
         }
 
-        if ( value.isArray() )
+        if ( value.hasArrayElements() )
         {
             return new ArrayScriptValue( this, value );
         }

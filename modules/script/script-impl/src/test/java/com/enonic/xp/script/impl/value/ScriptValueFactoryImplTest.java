@@ -5,9 +5,12 @@ import java.util.Map;
 
 import javax.script.ScriptEngine;
 
+import org.graalvm.polyglot.Context;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
+
+import com.google.common.base.Joiner;
 
 import jdk.nashorn.api.scripting.JSObject;
 
@@ -65,9 +68,10 @@ public class ScriptValueFactoryImplTest
 
     @Test
     public void newValue_function()
+            throws Exception
     {
-        final JSObject obj = Mockito.mock( JSObject.class );
-        Mockito.when( obj.isFunction() ).thenReturn( true );
+        final Object obj = execute( "var result = () => {}; result;" );
+
 
         final ScriptValue value = this.factory.newValue( obj );
 
@@ -195,8 +199,8 @@ public class ScriptValueFactoryImplTest
     }
 
     private Object execute( final String script )
-        throws Exception
     {
-        return this.engine.eval( script );
+        Context context = Context.create();
+        return  context.eval("js", script );
     }
 }

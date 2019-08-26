@@ -3,7 +3,7 @@ package com.enonic.xp.script.impl.value;
 import java.util.Map;
 import java.util.Set;
 
-import jdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.script.ScriptValue;
 import com.enonic.xp.script.impl.util.JsObjectConverter;
@@ -13,9 +13,9 @@ final class ObjectScriptValue
 {
     private final ScriptValueFactory factory;
 
-    private final JSObject value;
+    private final Value value;
 
-    ObjectScriptValue( final ScriptValueFactory factory, final JSObject value )
+    ObjectScriptValue( final ScriptValueFactory factory, final Value value )
     {
         this.factory = factory;
         this.value = value;
@@ -30,7 +30,7 @@ final class ObjectScriptValue
     @Override
     public Set<String> getKeys()
     {
-        return this.value.keySet();
+        return this.value.getMemberKeys();
     }
 
     @Override

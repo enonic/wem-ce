@@ -1,10 +1,14 @@
 package com.enonic.xp.script.impl.util;
 
-import javax.script.Bindings;
-import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Value;
+import org.graalvm.polyglot.proxy.ProxyArray;
+import org.graalvm.polyglot.proxy.ProxyObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public final class JavascriptHelperFactory
 {
@@ -17,29 +21,26 @@ public final class JavascriptHelperFactory
 
     public JavascriptHelper create()
     {
-        final Bindings bindings = this.engine.getBindings( ScriptContext.ENGINE_SCOPE );
-        final ScriptObjectMirror arrayProto = (ScriptObjectMirror) bindings.get( "Array" );
-        final ScriptObjectMirror objectProto = (ScriptObjectMirror) bindings.get( "Object" );
-        final ScriptObjectMirror jsonProto = (ScriptObjectMirror) bindings.get( "JSON" );
+        final Context context = Context.create();
 
         return new JavascriptHelper()
         {
             @Override
-            public ScriptObjectMirror newJsArray()
+            public Value newJsArray()
             {
-                return (ScriptObjectMirror) arrayProto.newObject();
+                return Value.asValue(ProxyArray.fromList(new ArrayList<>()));
             }
 
             @Override
-            public ScriptObjectMirror newJsObject()
+            public Value newJsObject()
             {
-                return (ScriptObjectMirror) objectProto.newObject();
+                return Value.asValue(ProxyObject.fromMap(new HashMap<>()));
             }
 
             @Override
-            public ScriptObjectMirror parseJson( final String text )
+            public Value parseJson( final String text )
             {
-                return (ScriptObjectMirror) jsonProto.callMember( "parse", text );
+                    return  context.eval("js","JSON.parse").execute( text );
             }
         };
     }

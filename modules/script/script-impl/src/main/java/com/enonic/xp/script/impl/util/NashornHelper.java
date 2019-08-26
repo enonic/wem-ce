@@ -3,54 +3,52 @@ package com.enonic.xp.script.impl.util;
 import java.util.Date;
 
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
 
-import jdk.nashorn.api.scripting.JSObject;
-import jdk.nashorn.api.scripting.NashornScriptEngineFactory;
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Value;
 
 public final class NashornHelper
 {
-    private final static NashornScriptEngineFactory FACTORY = new NashornScriptEngineFactory();
 
     public static ScriptEngine getScriptEngine( final ClassLoader loader )
     {
-        return FACTORY.getScriptEngine( new String[]{"--optimistic-types=false", "--global-per-engine", "-strict", "--language=es6", "--no-deprecation-warning"},
-                                        loader );
+        return new ScriptEngineManager().getEngineByName("graal.js");
     }
 
     public static boolean isUndefined( final Object value )
     {
-        return value == null || ScriptObjectMirror.isUndefined( value );
+        return false;
+        //return value == null ||  ( (Value) value ).isNull();
     }
 
     static boolean isNativeArray( final Object value )
     {
-        return ( value instanceof ScriptObjectMirror ) && ( (ScriptObjectMirror) value ).isArray();
+        return ( value instanceof Value) && ( (Value) value ).hasArrayElements();
     }
 
     static boolean isNativeObject( final Object value )
     {
-        return ( value instanceof ScriptObjectMirror ) && !isNativeArray( value );
+        return ( value instanceof Value ) && !isNativeArray( value );
     }
 
     static void addToNativeObject( final Object object, final String key, final Object value )
     {
-        ( (ScriptObjectMirror) object ).put( key, value );
+        ( (Value) object ).putMember( key, value );
     }
 
     static void addToNativeArray( final Object array, final Object value )
     {
-        ( (ScriptObjectMirror) array ).callMember( "push", value );
+        ( (Value) array ).invokeMember( "push", value );
     }
 
-    public static boolean isDateType( final JSObject value )
+    public static boolean isDateType( final Value value )
     {
-        return "Date".equalsIgnoreCase( value.getClassName() );
+        return value.canInvokeMember("getTime" );
     }
 
-    public static Date toDate( final JSObject value )
+    public static Date toDate( final Value value )
     {
-        final Number time = (Number) ( (ScriptObjectMirror) value ).callMember( "getTime" );
-        return new Date( time.longValue() );
+        final long time = value.invokeMember( "getTime" ).asLong();
+        return new Date( time );
     }
 }

@@ -2,6 +2,8 @@ apply from: "$rootDir/gradle/osgi.gradle"
 
 dependencies {
     compile project( ':script:script-api' )
+    compile group: 'org.graalvm.js', name: 'js-scriptengine', version: '19.1.1'
+    compile group: 'org.graalvm.js', name: 'js', version: '19.1.1'
 }
 
 jar {

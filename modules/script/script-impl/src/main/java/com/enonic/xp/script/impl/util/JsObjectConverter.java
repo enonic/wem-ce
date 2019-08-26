@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.script.serializer.MapSerializable;
 
@@ -71,21 +71,21 @@ public final class JsObjectConverter
 
     private Object toObject( final Object source )
     {
-        if ( source instanceof ScriptObjectMirror )
+        if ( source instanceof Value )
         {
-            return toObject( (ScriptObjectMirror) source );
+            return toObject( (Value) source );
         }
 
         return source;
     }
 
-    private Object toObject( final ScriptObjectMirror source )
+    private Object toObject( final Value source )
     {
-        if ( source.isArray() )
+        if ( source.hasArrayElements() )
         {
             return toList( source );
         }
-        else if ( source.isFunction() )
+        else if ( source.canExecute() )
         {
             return toFunction( source );
         }
@@ -99,11 +99,13 @@ public final class JsObjectConverter
         }
     }
 
-    private List<Object> toList( final ScriptObjectMirror source )
+    private List<Object> toList( final Value source )
     {
         final List<Object> result = new ArrayList<>();
-        for ( final Object item : source.values() )
+        for ( long itemIdx = 0; itemIdx < source.getArraySize(); itemIdx++ )
         {
+            var item = source.getArrayElement(itemIdx);
+
             final Object converted = toObject( item );
             if ( converted != null )
             {
@@ -116,31 +118,31 @@ public final class JsObjectConverter
 
     public Map<String, Object> toMap( final Object source )
     {
-        if ( source instanceof ScriptObjectMirror )
+        if ( source instanceof Value )
         {
-            return toMap( (ScriptObjectMirror) source );
+            return toMap( (Value) source );
         }
 
         return new HashMap<>();
     }
 
-    private Map<String, Object> toMap( final ScriptObjectMirror source )
+    private Map<String, Object> toMap( final Value source )
     {
         final Map<String, Object> result = new LinkedHashMap<>();
-        for ( final Map.Entry<String, Object> entry : source.entrySet() )
+        for ( final String entryKey : source.getMemberKeys() )
         {
-            final Object converted = toObject( entry.getValue() );
+            final Object converted = toObject( source.getMember(entryKey) );
             if ( converted != null )
             {
-                result.put( entry.getKey(), converted );
+                result.put( entryKey, converted );
             }
         }
 
         return result;
     }
 
-    private Function<Object[], Object> toFunction( final ScriptObjectMirror source )
+    private Function<Object[], Object> toFunction( final Value source )
     {
-        return arg -> toObject( source.call( null, arg ) );
+        return arg -> toObject( source.execute( arg ) );
     }
 }

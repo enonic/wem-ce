@@ -1,10 +1,12 @@
 package com.enonic.xp.script.impl.function;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.app.Application;
 import com.enonic.xp.config.Configuration;
 import com.enonic.xp.script.impl.util.JavascriptHelper;
+
+import java.util.Map;
 
 public final class ApplicationInfoBuilder
 {
@@ -24,23 +26,25 @@ public final class ApplicationInfoBuilder
         return this;
     }
 
-    public ScriptObjectMirror build()
+    public Value build()
     {
-        final ScriptObjectMirror result = this.javascriptHelper.newJsObject();
-        result.put( "name", toString( this.application.getKey() ) );
-        result.put( "version", toString( this.application.getVersion() ) );
-        result.put( "config", buildConfig() );
+        final Value result = this.javascriptHelper.newJsObject();
+        result.putMember( "name", toString( this.application.getKey() ) );
+        result.putMember( "version", toString( this.application.getVersion() ) );
+        result.putMember( "config", buildConfig() );
         return result;
     }
 
-    private ScriptObjectMirror buildConfig()
+    private Value buildConfig()
     {
-        final ScriptObjectMirror result = this.javascriptHelper.newJsObject();
+        final Value result = this.javascriptHelper.newJsObject();
         final Configuration config = this.application.getConfig();
 
         if ( config != null )
         {
-            result.putAll( config.asMap() );
+            for (Map.Entry<String, String> entry : config.asMap().entrySet()) {
+                result.putMember( entry.getKey(), entry.getValue() );
+            }
         }
 
         return result;

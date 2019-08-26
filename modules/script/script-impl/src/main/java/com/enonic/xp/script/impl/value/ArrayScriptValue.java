@@ -3,7 +3,7 @@ package com.enonic.xp.script.impl.value;
 import java.util.ArrayList;
 import java.util.List;
 
-import jdk.nashorn.api.scripting.JSObject;
+import org.graalvm.polyglot.Value;
 
 import com.enonic.xp.script.ScriptValue;
 
@@ -12,9 +12,9 @@ final class ArrayScriptValue
 {
     private final ScriptValueFactory factory;
 
-    private final JSObject value;
+    private final Value value;
 
-    ArrayScriptValue( final ScriptValueFactory factory, final JSObject value )
+    ArrayScriptValue( final ScriptValueFactory factory, final Value value )
     {
         this.factory = factory;
         this.value = value;
@@ -30,8 +30,9 @@ final class ArrayScriptValue
     public List<ScriptValue> getArray()
     {
         final List<ScriptValue> result = new ArrayList<>();
-        for ( final Object item : this.value.values() )
+        for ( long itemIdx = 0; itemIdx < this.value.getArraySize(); itemIdx++ )
         {
+            var item = this.value.getArrayElement(itemIdx);
             final ScriptValue wrapped = this.factory.newValue( item );
             if ( wrapped != null )
             {
@@ -62,8 +63,9 @@ final class ArrayScriptValue
     public List<Object> getList()
     {
         final List<Object> result = new ArrayList<>();
-        for ( final Object val : this.value.values() )
+        for ( long itemIdx = 0; itemIdx < this.value.getArraySize(); itemIdx++ )
         {
+            var val = this.value.getArrayElement(itemIdx);
             final ScriptValue item = this.factory.newValue( val );
             if ( item == null )
             {
