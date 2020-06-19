@@ -1,4 +1,5 @@
 trigger:
+  batch: true
   branches:
     include:
     - '*'
@@ -11,7 +12,7 @@ steps:
   displayName: 'Clone and build xp core'
 - task: CopyFiles@2
   inputs:
-    Contents: $(Build.SourcesDirectory)/modules/runtime/build
+    Contents: $(Build.SourcesDirectory)/modules/runtime/build/**
     targetFolder: $(Build.ArtifactStagingDirectory)
 - task: PublishBuildArtifacts@1
   inputs:
