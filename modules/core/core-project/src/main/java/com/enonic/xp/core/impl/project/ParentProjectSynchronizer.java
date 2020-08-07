@@ -203,8 +203,8 @@ public class ParentProjectSynchronizer
         {
             if ( !targetContent.getParentPath().equals( sourceContent.getParentPath() ) )
             {
-                if ( contentService.contentExists( sourceContent.getParentPath() ) )
-                {
+//                if ( contentService.contentExists( sourceContent.getParentPath() ) )
+//                {
                     final MoveContentParams moveContentParams = MoveContentParams.create().
                         contentId( targetContent.getId() ).
                         parentContentPath( sourceContent.getParentPath() ).
@@ -213,7 +213,7 @@ public class ParentProjectSynchronizer
 
                     contentService.move( moveContentParams );
                     return contentService.getById( targetContent.getId() );
-                }
+//                }
             }
         }
         return targetContent;
