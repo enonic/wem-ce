@@ -44,7 +44,6 @@ import com.enonic.xp.media.MediaInfoService;
 import com.enonic.xp.project.Project;
 import com.enonic.xp.schema.content.ContentTypeFromMimeTypeResolver;
 import com.enonic.xp.schema.content.ContentTypeName;
-import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.site.Site;
 import com.enonic.xp.site.SiteConfigsDataSerializer;
 
@@ -312,7 +311,7 @@ public class ParentProjectSynchronizer
         return new UpdateContentParams().
             requireValid( false ).
             contentId( source.getId() ).
-            modifier( PrincipalKey.ofAnonymous() ).
+          //  modifier( PrincipalKey.ofAnonymous() ).
             inherit( target.getInherit() ).
             editor( edit -> {
                 edit.data = source.getData();
