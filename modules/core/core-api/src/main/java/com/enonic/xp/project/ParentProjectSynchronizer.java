@@ -623,6 +623,7 @@ public class ParentProjectSynchronizer
             importPermissions( false ).
             dryRun( false ).
             insertManualStrategy( insertManualStrategy ).
+            originProject( ProjectName.from( sourceContext.getRepositoryId() ) ).
             build();
     }
 

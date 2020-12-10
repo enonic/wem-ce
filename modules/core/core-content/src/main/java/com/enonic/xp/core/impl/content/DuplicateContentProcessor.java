@@ -33,6 +33,11 @@ public class DuplicateContentProcessor
             data.removeProperties( ContentPropertyNames.INHERIT );
         }
 
+        if ( data.hasProperty( ContentPropertyNames.ORIGIN_PROJECT ) )
+        {
+            data.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
+        }
+
         return data;
     }
 }

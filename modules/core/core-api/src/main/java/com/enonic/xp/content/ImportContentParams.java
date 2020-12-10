@@ -7,6 +7,7 @@ import com.google.common.base.Preconditions;
 
 import com.enonic.xp.node.BinaryAttachments;
 import com.enonic.xp.node.InsertManualStrategy;
+import com.enonic.xp.project.ProjectName;
 
 public class ImportContentParams
 {
@@ -19,6 +20,8 @@ public class ImportContentParams
     private final InsertManualStrategy insertManualStrategy;
 
     private final EnumSet<ContentInheritType> inherit;
+
+    private final ProjectName originProject;
 
     private final boolean dryRun;
 
@@ -33,6 +36,7 @@ public class ImportContentParams
         inherit = builder.inherit;
         dryRun = builder.dryRun;
         importPermissions = builder.importPermissions;
+        originProject = builder.originProject;
     }
 
     public static Builder create()
@@ -65,6 +69,11 @@ public class ImportContentParams
         return inherit;
     }
 
+    public ProjectName getOriginProject()
+    {
+        return originProject;
+    }
+
     public boolean isDryRun()
     {
         return dryRun;
@@ -86,6 +95,8 @@ public class ImportContentParams
         private InsertManualStrategy insertManualStrategy;
 
         private EnumSet<ContentInheritType> inherit;
+
+        private ProjectName originProject;
 
         private boolean dryRun;
 
@@ -123,6 +134,12 @@ public class ImportContentParams
         {
             this.inherit =
                 inherit != null ? !inherit.isEmpty() ? EnumSet.copyOf( inherit ) : EnumSet.noneOf( ContentInheritType.class ) : null;
+            return this;
+        }
+
+        public Builder originProject( ProjectName originProject )
+        {
+            this.originProject = originProject;
             return this;
         }
 
