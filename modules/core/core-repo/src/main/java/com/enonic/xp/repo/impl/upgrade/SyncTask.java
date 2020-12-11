@@ -163,88 +163,59 @@ final class SyncTask
 
                 for ( final Content content : result.getContents() )
                 {
-                    if ( sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) )
-                    {
 
-                        final FindContentVersionsResult versions = contentService.getVersions( FindContentVersionsParams.create().
-                            contentId( content.getId() ).
-                            from( 0 ).
-                            size( -1 ).
-                            build() );
+                    final FindContentVersionsResult versions = contentService.getVersions( FindContentVersionsParams.create().
+                        contentId( content.getId() ).
+                        from( 0 ).
+                        size( -1 ).
+                        build() );
 
-                        final NodeBranchEntry draftBranchEntry =
-                            this.branchService.get( NodeId.from( content.getId() ), draftInternalContext );
-                        final NodeBranchEntry masterBranchEntry =
-                            this.branchService.get( NodeId.from( content.getId() ), masterInternalContext );
+                    final NodeBranchEntry draftBranchEntry = this.branchService.get( NodeId.from( content.getId() ), draftInternalContext );
+                    final NodeBranchEntry masterBranchEntry =
+                        this.branchService.get( NodeId.from( content.getId() ), masterInternalContext );
 
-                        versions.getContentVersions().forEach( contentVersion -> {
+                    versions.getContentVersions().forEach( contentVersion -> {
 
-                            final NodeVersionMetadata metadata = this.versionService.getVersion( NodeId.from( content.getId() ),
-                                                                                                 NodeVersionId.from(
-                                                                                                     contentVersion.getId() ),
-                                                                                                 draftInternalContext );
+                        final NodeVersionMetadata metadata =
+                            this.versionService.getVersion( NodeId.from( content.getId() ), NodeVersionId.from( contentVersion.getId() ),
+                                                            draftInternalContext );
 
-                            final NodeVersion nodeVersion =
-                                this.nodeVersionService.get( metadata.getNodeVersionKey(), draftInternalContext );
-                            final PropertyTree versionData = nodeVersion.getData();
+                        final NodeVersion nodeVersion = this.nodeVersionService.get( metadata.getNodeVersionKey(), draftInternalContext );
+                        final PropertyTree versionData = nodeVersion.getData();
 
+                        //remove originProject for duplicates
+
+                        if ( !sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) )
+                        {
+                            if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) != null )
+                            {
+                                if ( versionData.getProperty( ContentPropertyNames.INHERIT ) == null )
+                                {
+                                    versionData.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
+
+                                    writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
+                                                  masterBranchEntry );
+                                }
+                            }
+                        }
+                        else
+                        {
                             if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) == null ||
                                 !sourceProject.getName().toString().equals(
                                     versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ).getString() ) )
                             {
                                 versionData.setString( ContentPropertyNames.ORIGIN_PROJECT, sourceProject.getName().toString() );
 
-                                final byte[] nodeJsonString = new NodeVersionJsonSerializer().
-                                    toNodeString( nodeVersion );
-
-                                final Segment nodeSegment = RepositorySegmentUtils.toSegment( draftInternalContext.getRepositoryId(),
-                                                                                              NodeConstants.NODE_SEGMENT_LEVEL );
-                                try
-                                {
-
-                                    this.versionService.delete( Set.of( metadata.getNodeVersionId() ), draftInternalContext );
-
-                                    final BlobKey newNodeKey =
-                                        blobStore.addRecord( nodeSegment, ByteSource.wrap( nodeJsonString ) ).getKey();
-
-                                    final NodeVersionKey newNodeVersionKey =
-                                        NodeVersionKey.from( newNodeKey, metadata.getNodeVersionKey().getIndexConfigBlobKey(),
-                                                             metadata.getNodeVersionKey().getAccessControlBlobKey() );
-
-                                    this.versionService.store( NodeVersionMetadata.create().
-                                        nodeVersionId( metadata.getNodeVersionId() ).
-                                        nodeVersionKey( newNodeVersionKey ).
-                                        nodeCommitId( metadata.getNodeCommitId() ).
-                                        nodeId( metadata.getNodeId() ).
-                                        nodePath( metadata.getNodePath() ).
-                                        binaryBlobKeys( metadata.getBinaryBlobKeys() ).
-                                        timestamp( metadata.getTimestamp() ).
-                                        build(), draftInternalContext );
-
-                                    if ( draftBranchEntry != null && draftBranchEntry.getVersionId().equals( metadata.getNodeVersionId() ) )
-                                    {
-                                        updateBranchEntry( draftBranchEntry, newNodeVersionKey, draftInternalContext );
-                                    }
-
-                                    if ( masterBranchEntry != null &&
-                                        masterBranchEntry.getVersionId().equals( metadata.getNodeVersionId() ) )
-                                    {
-                                        updateBranchEntry( masterBranchEntry, newNodeVersionKey, masterInternalContext );
-                                    }
-                                }
-                                catch ( Exception e )
-                                {
-                                    LOGGER.error( "originProject value sync failed for [{}] content in [{}] repo", content.getId(),
-                                                  ContextAccessor.current().getRepositoryId() );
-                                }
+                                writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
+                                              masterBranchEntry );
                             }
-
-                        } );
-
-                        if ( content.hasChildren() )
-                        {
-                            queue.offer( content );
                         }
+
+                    } );
+
+                    if ( content.hasChildren() )
+                    {
+                        queue.offer( content );
                     }
                 }
             }
@@ -259,6 +230,51 @@ final class SyncTask
         LOGGER.info( "-- [{}] -> [{}] origin project sync finished.", sourceProject.getName().toString(),
                      targetProject.getName().toString() );
 
+    }
+
+    private void writeChanges( final NodeVersion nodeVersion, NodeVersionMetadata metadata, InternalContext draftInternalContext,
+                               InternalContext masterInternalContext, NodeBranchEntry draftBranchEntry, NodeBranchEntry masterBranchEntry )
+    {
+        final byte[] nodeJsonString = new NodeVersionJsonSerializer().
+            toNodeString( nodeVersion );
+
+        final Segment nodeSegment =
+            RepositorySegmentUtils.toSegment( draftInternalContext.getRepositoryId(), NodeConstants.NODE_SEGMENT_LEVEL );
+        try
+        {
+
+            this.versionService.delete( Set.of( metadata.getNodeVersionId() ), draftInternalContext );
+
+            final BlobKey newNodeKey = blobStore.addRecord( nodeSegment, ByteSource.wrap( nodeJsonString ) ).getKey();
+
+            final NodeVersionKey newNodeVersionKey = NodeVersionKey.from( newNodeKey, metadata.getNodeVersionKey().getIndexConfigBlobKey(),
+                                                                          metadata.getNodeVersionKey().getAccessControlBlobKey() );
+
+            this.versionService.store( NodeVersionMetadata.create().
+                nodeVersionId( metadata.getNodeVersionId() ).
+                nodeVersionKey( newNodeVersionKey ).
+                nodeCommitId( metadata.getNodeCommitId() ).
+                nodeId( metadata.getNodeId() ).
+                nodePath( metadata.getNodePath() ).
+                binaryBlobKeys( metadata.getBinaryBlobKeys() ).
+                timestamp( metadata.getTimestamp() ).
+                build(), draftInternalContext );
+
+            if ( draftBranchEntry != null && draftBranchEntry.getVersionId().equals( metadata.getNodeVersionId() ) )
+            {
+                updateBranchEntry( draftBranchEntry, newNodeVersionKey, draftInternalContext );
+            }
+
+            if ( masterBranchEntry != null && masterBranchEntry.getVersionId().equals( metadata.getNodeVersionId() ) )
+            {
+                updateBranchEntry( masterBranchEntry, newNodeVersionKey, masterInternalContext );
+            }
+        }
+        catch ( Exception e )
+        {
+            LOGGER.error( "originProject value sync failed for [{}] content in [{}] repo", metadata.getNodeId(),
+                          ContextAccessor.current().getRepositoryId() );
+        }
     }
 
     private void updateBranchEntry( final NodeBranchEntry branchEntry, final NodeVersionKey newNodeVersionKey,
