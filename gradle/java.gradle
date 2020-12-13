@@ -1,6 +1,7 @@
 apply plugin: 'java'
 apply plugin: 'java-test-fixtures'
 apply plugin: 'jacoco'
+apply plugin: 'biz.aQute.bnd.builder'
 
 def defaultEncoding = 'UTF-8'
 
@@ -78,6 +79,10 @@ jar {
     manifest {
         attributes( ['Implementation-Version': project.version] )
     }
+    bnd( 'Bundle-SymbolicName': project.group + '.' + project.name.replace( '-', '.' ),
+         '-nouses': 'true',
+         '-dsannotations': '*',
+         'Implementation-Version': project.version )
 }
 
 publishing.publications {

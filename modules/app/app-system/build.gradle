@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 jar {
     bnd( 'Bundle-Name': 'System',
          'X-Bundle-Type': 'system' )

@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile project( ':jaxrs:jaxrs-api' )
     compile "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:${jacksonVersion}"

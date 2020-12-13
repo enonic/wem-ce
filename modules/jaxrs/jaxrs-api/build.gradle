@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile project( ':web:web-api' )
     compile "jakarta.ws.rs:jakarta.ws.rs-api:${jaxrsApiVersion}"

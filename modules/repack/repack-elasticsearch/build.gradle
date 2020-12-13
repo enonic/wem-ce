@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile ('org.elasticsearch:elasticsearch:2.4.6') {
         exclude group: 'com.google.guava'

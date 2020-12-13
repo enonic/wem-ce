@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile project( ':web:web-api' )
     implementation project( ':core:core-internal' )

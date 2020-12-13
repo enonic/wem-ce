@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     implementation 'org.jsoup:jsoup:1.13.1'
 }

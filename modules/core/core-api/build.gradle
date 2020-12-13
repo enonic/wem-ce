@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile ('com.google.guava:guava:26.0-jre') {
         exclude group: 'com.google.code.findbugs'
@@ -25,11 +23,4 @@ dependencies {
 jar {
     bnd( 'Bundle-Name': 'Enonic XP Core - Api',
          'Export-Package': '!com.enonic.xp.core.internal.*,com.enonic.xp.*' )
-}
-
-sourceSets {
-    main {
-        // Change the output directory for the main source set back to the old path
-        java.outputDir = file( 'build/classes/main' )
-    }
 }

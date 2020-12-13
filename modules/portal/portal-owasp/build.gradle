@@ -1,5 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
 dependencies {
     compile project( ':portal:portal-api' )
     compile( 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20200713.1' ) {

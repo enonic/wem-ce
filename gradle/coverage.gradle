@@ -1,9 +1,7 @@
-apply plugin: 'jacoco'
-
 evaluationDependsOnChildren()
 
 task jacocoMergedReport( type: JacocoReport ) {
-    group = 'Coverage'
+    group = 'verification'
     description = 'Generates a merged report all sub-projects.'
 
     def projects = subprojects.findAll { it.plugins.hasPlugin( JacocoPlugin ) && it.file( "src/test" ).exists() }

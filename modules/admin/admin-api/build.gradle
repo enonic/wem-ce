@@ -1,7 +1,3 @@
-apply from: "$rootDir/gradle/osgi.gradle"
-
-apply plugin: 'biz.aQute.bnd.builder'
-
 dependencies {
     compile project( ':portal:portal-api' )
     compile project( ':jaxrs:jaxrs-api' )

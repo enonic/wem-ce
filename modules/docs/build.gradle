@@ -1,5 +1,7 @@
-apply plugin: 'java-base'
-apply plugin: 'com.github.node-gradle.node'
+plugins {
+    id "com.github.node-gradle.node" version "2.2.4"
+    id 'distribution'
+}
 
 node {
     download = true
@@ -19,24 +21,27 @@ task javadocAll( type: Javadoc, group: 'documentation' ) {
     verbose = false
 
     options {
-        links 'http://docs.oracle.com/javase/8/docs/api'
-        links 'http://www.javadoc.io/doc/com.google.guava/guava/26.0-jre'
+        links 'https://docs.oracle.com/en/java/javase/11/docs/api/'
+        links 'https://www.javadoc.io/doc/com.google.guava/guava/26.0-jre'
         quiet()
         encoding( 'UTF-8' )
     }
 
     javadocProjects.each { project ->
-        project.tasks.withType(Javadoc).each { javadocTask ->
+        project.tasks.withType( Javadoc ).each { javadocTask ->
             source += javadocTask.source
             classpath += javadocTask.classpath
             excludes += javadocTask.excludes
             includes += javadocTask.includes
         }
     }
+    destinationDir = file( "${buildDir}/javadoc" )
 }
 
 task javadocZip( type: Zip ) {
     from javadocAll
+    archiveFileName = "${project.name}-${project.version}-javadoc.zip"
+    destinationDirectory = project.distsDir
     archiveClassifier.set( 'javadoc' )
 }
 
@@ -47,6 +52,8 @@ task gruntAll(type: NpmTask, dependsOn: 'npmInstall') {
 
 task libdocZip( type: Zip, dependsOn: 'gruntAll' ) {
     from jsDocOutput
+    archiveFileName = "${project.name}-${project.version}-libdoc.zip"
+    destinationDirectory = project.distsDir
     archiveClassifier.set( 'libdoc' )
 }
 
