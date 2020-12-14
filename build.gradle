@@ -10,7 +10,6 @@ plugins {
 ext {
     leafProjects = subprojects.findAll { p -> p.subprojects.empty }
     javaProjects = leafProjects - project( ':runtime' ) - project( ':docs' )
-    mavenPublishProjects = leafProjects
 }
 
 allprojects {
@@ -25,21 +24,32 @@ allprojects {
     apply from: "$rootDir/gradle/versions.gradle"
 }
 
-configure( mavenPublishProjects ) {
-    apply plugin: 'maven-publish'
-}
-
 configure( javaProjects ) {
     apply from: "$rootDir/gradle/java.gradle"
-}
-
-configure( rootProject ) {
-    apply from: "$rootDir/gradle/coverage.gradle"
 }
 
 task ci {
     description = 'Builds and generates coverage report.'
     dependsOn = ['build', 'jacocoMergedReport']
+}
+
+task jacocoMergedReport( type: JacocoReport ) {
+    group = 'verification'
+    description = 'Generates a merged report all sub-projects.'
+
+    def projects = subprojects.findAll { it.plugins.hasPlugin( JacocoPlugin ) }
+
+    dependsOn projects*.jacocoTestReport
+
+    sourceDirectories.setFrom( projects*.sourceSets*.main*.allSource )
+    classDirectories.setFrom( files( projects*.sourceSets*.main*.output ) )
+    executionData.setFrom(files(projects*.jacocoTestReport*.executionData))
+
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = false
+    }
 }
 
 def isNonStable = { String version ->
