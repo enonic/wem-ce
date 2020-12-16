@@ -4,5 +4,5 @@ public @interface ContentConfig
 {
     boolean auditlog_enabled() default true;
 
-    String content_sync_period() default "PT5M";
+    String content_sync_period() default "PT0M";
 }
