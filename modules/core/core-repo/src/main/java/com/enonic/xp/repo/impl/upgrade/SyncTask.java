@@ -1,6 +1,7 @@
 package com.enonic.xp.repo.impl.upgrade;
 
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
@@ -183,26 +184,23 @@ final class SyncTask
                         final NodeVersion nodeVersion = this.nodeVersionService.get( metadata.getNodeVersionKey(), draftInternalContext );
                         final PropertyTree versionData = nodeVersion.getData();
 
-                        //remove originProject for duplicates
+                        final List<String> inherit = (List<String>) versionData.getStrings( ContentPropertyNames.INHERIT );
 
-                        if ( !sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) )
+                        //remove originProject for duplicates
+                        if ( !sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) && inherit.isEmpty() )
                         {
                             if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) != null )
                             {
-                                if ( versionData.getProperty( ContentPropertyNames.INHERIT ) == null )
-                                {
-                                    versionData.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
+                                versionData.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
 
-                                    writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
-                                                  masterBranchEntry );
-                                }
+                                writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
+                                              masterBranchEntry );
                             }
                         }
-                        else
+                        else //add originProject to version
                         {
                             if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) == null ||
-                                !sourceProject.getName().toString().equals(
-                                    versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ).getString() ) )
+                                !sourceProject.getName().toString().equals( versionData.getString( ContentPropertyNames.ORIGIN_PROJECT ) ) )
                             {
                                 versionData.setString( ContentPropertyNames.ORIGIN_PROJECT, sourceProject.getName().toString() );
 
