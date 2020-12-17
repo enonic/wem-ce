@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import com.enonic.xp.blob.BlobStore;
 import com.enonic.xp.content.ContentService;
+import com.enonic.xp.core.internal.concurrent.SimpleExecutor;
 import com.enonic.xp.index.IndexService;
 import com.enonic.xp.node.NodeService;
 import com.enonic.xp.page.PageDescriptorService;
@@ -23,7 +24,7 @@ import com.enonic.xp.repo.impl.version.VersionService;
 @Component(immediate = true)
 public class SyncTaskRunner
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger( SyncTaskRunner.class );
+    private static final Logger LOG = LoggerFactory.getLogger( SyncTaskRunner.class );
 
     private ContentService contentService;
 
@@ -50,8 +51,10 @@ public class SyncTaskRunner
     @Activate
     public void activate()
     {
+        final SimpleExecutor executor = new SimpleExecutor( Executors::newSingleThreadExecutor, "origin-project-sync-thread-%d",
+                                                            e -> LOG.error( "originProject sync failed", e ) );
 
-        Executors.newSingleThreadExecutor().execute( SyncTask.create().
+        executor.execute( SyncTask.create().
             contentService( contentService ).
             indexService( indexService ).
             projectService( projectService ).

@@ -12,6 +12,8 @@ dependencies {
     runtimeOnly "com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:${jacksonVersion}"
     runtimeOnly "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:${jacksonVersion}"
 
+    implementation project( ':core:core-internal' )
+
     compile "org.apache.commons:commons-compress:${commonsCompressVersion}"
 
     testFixturesImplementation( project(":core:core-audit") )
