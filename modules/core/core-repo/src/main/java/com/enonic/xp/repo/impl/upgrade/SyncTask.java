@@ -165,55 +165,67 @@ final class SyncTask
                 for ( final Content content : result.getContents() )
                 {
 
-                    final FindContentVersionsResult versions = contentService.getVersions( FindContentVersionsParams.create().
-                        contentId( content.getId() ).
-                        from( 0 ).
-                        size( -1 ).
-                        build() );
-
-                    final NodeBranchEntry draftBranchEntry = this.branchService.get( NodeId.from( content.getId() ), draftInternalContext );
-                    final NodeBranchEntry masterBranchEntry =
-                        this.branchService.get( NodeId.from( content.getId() ), masterInternalContext );
-
-                    versions.getContentVersions().forEach( contentVersion -> {
-
-                        final NodeVersionMetadata metadata =
-                            this.versionService.getVersion( NodeId.from( content.getId() ), NodeVersionId.from( contentVersion.getId() ),
-                                                            draftInternalContext );
-
-                        final NodeVersion nodeVersion = this.nodeVersionService.get( metadata.getNodeVersionKey(), draftInternalContext );
-                        final PropertyTree versionData = nodeVersion.getData();
-
-                        final List<String> inherit = (List<String>) versionData.getStrings( ContentPropertyNames.INHERIT );
-
-                        //remove originProject for duplicates
-                        if ( !sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) && inherit.isEmpty() )
-                        {
-                            if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) != null )
-                            {
-                                versionData.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
-
-                                writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
-                                              masterBranchEntry );
-                            }
-                        }
-                        else //add originProject to version
-                        {
-                            if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) == null ||
-                                !sourceProject.getName().toString().equals( versionData.getString( ContentPropertyNames.ORIGIN_PROJECT ) ) )
-                            {
-                                versionData.setString( ContentPropertyNames.ORIGIN_PROJECT, sourceProject.getName().toString() );
-
-                                writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
-                                              masterBranchEntry );
-                            }
-                        }
-
-                    } );
-
-                    if ( content.hasChildren() )
+                    try
                     {
-                        queue.offer( content );
+                        final FindContentVersionsResult versions = contentService.getVersions( FindContentVersionsParams.create().
+                            contentId( content.getId() ).
+                            from( 0 ).
+                            size( -1 ).
+                            build() );
+
+                        final NodeBranchEntry draftBranchEntry =
+                            this.branchService.get( NodeId.from( content.getId() ), draftInternalContext );
+                        final NodeBranchEntry masterBranchEntry =
+                            this.branchService.get( NodeId.from( content.getId() ), masterInternalContext );
+
+                        versions.getContentVersions().forEach( contentVersion -> {
+
+                            final NodeVersionMetadata metadata = this.versionService.getVersion( NodeId.from( content.getId() ),
+                                                                                                 NodeVersionId.from(
+                                                                                                     contentVersion.getId() ),
+                                                                                                 draftInternalContext );
+
+                            final NodeVersion nodeVersion =
+                                this.nodeVersionService.get( metadata.getNodeVersionKey(), draftInternalContext );
+                            final PropertyTree versionData = nodeVersion.getData();
+
+                            final List<String> inherit = (List<String>) versionData.getStrings( ContentPropertyNames.INHERIT );
+
+                            //remove originProject for duplicates
+                            if ( !sourceContext.callWith( () -> contentService.contentExists( content.getId() ) ) && inherit.isEmpty() )
+                            {
+                                if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) != null )
+                                {
+                                    versionData.removeProperty( ContentPropertyNames.ORIGIN_PROJECT );
+
+                                    writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
+                                                  masterBranchEntry );
+                                }
+                            }
+                            else //add originProject to version
+                            {
+                                if ( versionData.getProperty( ContentPropertyNames.ORIGIN_PROJECT ) == null ||
+                                    !sourceProject.getName().toString().equals(
+                                        versionData.getString( ContentPropertyNames.ORIGIN_PROJECT ) ) )
+                                {
+                                    versionData.setString( ContentPropertyNames.ORIGIN_PROJECT, sourceProject.getName().toString() );
+
+                                    writeChanges( nodeVersion, metadata, draftInternalContext, masterInternalContext, draftBranchEntry,
+                                                  masterBranchEntry );
+                                }
+                            }
+
+                        } );
+
+                        if ( content.hasChildren() )
+                        {
+                            queue.offer( content );
+                        }
+                    }
+                    catch ( Exception e )
+                    {
+                        LOGGER.error( "error during syncing origingProject for [{}] content in [{}] project", content.getId(),
+                                      targetProject.getName(), e );
                     }
                 }
             }
