@@ -1,13 +1,14 @@
 package com.enonic.xp.repo.impl.upgrade;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Queue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Preconditions;
 import com.google.common.io.ByteSource;
 
 import com.enonic.xp.blob.BlobKey;
@@ -38,7 +39,9 @@ import com.enonic.xp.node.NodeVersionId;
 import com.enonic.xp.node.NodeVersionMetadata;
 import com.enonic.xp.page.PageDescriptorService;
 import com.enonic.xp.project.Project;
+import com.enonic.xp.project.ProjectName;
 import com.enonic.xp.project.ProjectService;
+import com.enonic.xp.project.Projects;
 import com.enonic.xp.region.LayoutDescriptorService;
 import com.enonic.xp.region.PartDescriptorService;
 import com.enonic.xp.repo.impl.InternalContext;
@@ -53,7 +56,7 @@ import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.security.User;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 
-final class SyncTask
+public final class SyncTask
     implements Runnable
 {
     private static final Logger LOGGER = LoggerFactory.getLogger( SyncTask.class );
@@ -93,28 +96,56 @@ final class SyncTask
     @Override
     public void run()
     {
-        createAdminContext().runWith( () -> this.projectService.list().
+        createAdminContext().runWith( () -> sortProjects( this.projectService.list() ).
             stream().
             filter( project -> project.getParent() != null ).
-            sorted( ( o1, o2 ) -> {
-
-                if ( o2.getName().equals( o1.getParent() ) )
-                {
-                    return 1;
-                }
-
-                if ( o1.getName().equals( o2.getParent() ) )
-                {
-                    return -1;
-                }
-
-                return 0;
-            } ).
             forEach( project -> {
                 Project parentProject = this.projectService.get( project.getParent() );
                 doSync( parentProject, project );
             } ) );
+    }
 
+    private List<Project> sortProjects( final Projects projects )
+    {
+        final List<Project> result = new ArrayList<>();
+        final Queue<Project> queue = new ArrayDeque<>( projects.getList() );
+
+        ProjectName currentParent = null;
+        int currentParentCounter = 0;
+        int loopSize = queue.size();
+
+        while ( !queue.isEmpty() )
+        {
+            if ( loopSize == 0 )
+            {
+                if ( currentParentCounter < result.size() )
+                {
+                    currentParent = result.get( currentParentCounter ).getName();
+                    currentParentCounter++;
+                }
+                else
+                {  // projects with invalid parent in queue
+                    currentParent = queue.peek().getParent();
+                }
+
+                loopSize = queue.size();
+
+            }
+
+            loopSize--;
+
+            final Project current = queue.poll();
+            if ( Objects.equals( current.getParent(), currentParent ) )
+            {
+                result.add( current );
+            }
+            else
+            {
+                queue.offer( current );
+            }
+        }
+
+        return result;
     }
 
     private void doSync( final Project sourceProject, final Project targetProject )
@@ -407,23 +438,8 @@ final class SyncTask
             return this;
         }
 
-        private void validate()
-        {
-            Preconditions.checkNotNull( this.projectService, "projectService must be set." );
-            Preconditions.checkNotNull( this.contentService, "contentService must be set." );
-            Preconditions.checkNotNull( this.indexService, "nodeService must be set." );
-            Preconditions.checkNotNull( this.partDescriptorService, "partDescriptorService must be set." );
-            Preconditions.checkNotNull( this.pageDescriptorService, "pageDescriptorService must be set." );
-            Preconditions.checkNotNull( this.layoutDescriptorService, "layoutDescriptorService must be set." );
-            Preconditions.checkNotNull( this.blobStore, "blobStore must be set." );
-            Preconditions.checkNotNull( this.versionService, "versionService must be set." );
-            Preconditions.checkNotNull( this.branchService, "branchService must be set." );
-            Preconditions.checkNotNull( this.nodeVersionService, "nodeVersionService must be set." );
-        }
-
         public SyncTask build()
         {
-            validate();
             return new SyncTask( this );
         }
     }
