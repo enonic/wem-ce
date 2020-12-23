@@ -11,12 +11,11 @@ public final class ApplicationRelativeResolver
 {
     private final ApplicationKey current;
 
-    private final ApplicationWildcardResolver applicationWildcardResolver;
+    private static final ApplicationWildcardResolver APPLICATION_WILDCARD_RESOLVER = new ApplicationWildcardResolver();
 
     public ApplicationRelativeResolver( final ApplicationKey current )
     {
         this.current = current;
-        this.applicationWildcardResolver = new ApplicationWildcardResolver();
     }
 
     public String toServiceUrl( final String name )
@@ -62,7 +61,7 @@ public final class ApplicationRelativeResolver
     public String toContentTypeNameRegexp( final String name )
     {
 
-        if ( name.contains( ":" ) || this.applicationWildcardResolver.stringHasWildcard( name ) )
+        if ( name.contains( ":" ) || APPLICATION_WILDCARD_RESOLVER.stringHasWildcard( name ) )
         {
             return name;
         }

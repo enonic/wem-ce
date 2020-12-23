@@ -2,7 +2,6 @@ package com.enonic.xp.admin.impl.rest.resource.schema.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -15,33 +14,19 @@ public class ContentTypeNameWildcardResolver
 {
     private final ContentTypeService contentTypeService;
 
-    private final ApplicationWildcardResolver applicationWildcardResolver;
+    private static final ApplicationWildcardResolver APPLICATION_WILDCARD_RESOLVER = new ApplicationWildcardResolver();
 
     public ContentTypeNameWildcardResolver( final ContentTypeService contentTypeService )
     {
         this.contentTypeService = contentTypeService;
-        this.applicationWildcardResolver = new ApplicationWildcardResolver();
     }
 
-    public boolean anyTypeHasWildcard( final List<String> contentTypeNames )
+    private List<String> resolveContentTypeName( final Predicate<String> pattern )
     {
-        return contentTypeNames.stream().anyMatch(
-            s -> this.applicationWildcardResolver.hasAnyWildcard( s ) || this.applicationWildcardResolver.startWithAppWildcard( s ) );
-    }
-
-    public List<String> resolveContentTypeName( final String regex )
-    {
-
-        final List<String> allContentTypes = contentTypeService.
+        return contentTypeService.
             getAll().
             stream().
             map( type -> type.getName().toString() ).
-            collect( Collectors.toList() );
-
-        final Predicate<String> pattern = Pattern.compile( regex ).asPredicate();
-
-        return allContentTypes.
-            stream().
             filter( pattern ).
             collect( Collectors.toList() );
     }
@@ -51,59 +36,26 @@ public class ContentTypeNameWildcardResolver
         final List<String> resolvedNames = new ArrayList<>();
 
         namesToResolve.forEach( name -> {
-            if ( this.applicationWildcardResolver.hasAnyWildcard( name ) || this.applicationWildcardResolver.startWithAppWildcard( name ) )
+            final String resolvedName =
+                APPLICATION_WILDCARD_RESOLVER.startWithAppWildcard( name )
+                    ? APPLICATION_WILDCARD_RESOLVER.resolveAppWildcard( name, currentApplicationKey )
+                    : name;
+
+            if ( APPLICATION_WILDCARD_RESOLVER.hasAnyWildcard( resolvedName ) )
             {
-                String resolvedName;
-                if ( this.applicationWildcardResolver.startWithAppWildcard( name ) )
-                {
-                    resolvedName = this.applicationWildcardResolver.resolveAppWildcard( name, currentApplicationKey );
-                }
-                else
-                {
-                    resolvedName = name;
-                }
-                if ( this.applicationWildcardResolver.hasAnyWildcard( resolvedName ) )
-                {
-                    resolvedNames.addAll( this.resolveAnyWildcard( resolvedName ) );
-                }
-                else
-                {
-                    resolvedNames.add( resolvedName );
-                }
+                resolvedNames.addAll( resolveContentTypeName( this.resolveAnyWildcard( resolvedName ) ) );
             }
             else
             {
-                resolvedNames.add( name );
+                resolvedNames.add( resolvedName );
             }
         } );
 
         return resolvedNames;
     }
 
-    private List<String> resolveAnyWildcard( final String nameToResolve )
+    private Predicate<String> resolveAnyWildcard( final String nameToResolve )
     {
-        return resolveContentTypeName( nameToResolve.replaceAll( "\\*", ".*" ) );
-    }
-
-    @Override
-    public boolean equals( final Object o )
-    {
-        if ( this == o )
-        {
-            return true;
-        }
-        if ( o == null || getClass() != o.getClass() )
-        {
-            return false;
-        }
-        final ContentTypeNameWildcardResolver that = (ContentTypeNameWildcardResolver) o;
-        return Objects.equals( contentTypeService, that.contentTypeService );
-    }
-
-    @Override
-    public int hashCode()
-    {
-
-        return Objects.hash( contentTypeService );
+        return Pattern.compile( nameToResolve.replace( "*", ".*" ) ).asPredicate();
     }
 }

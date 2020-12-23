@@ -1,7 +1,5 @@
 package com.enonic.xp.admin.impl.rest.resource.schema.xdata;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +30,6 @@ import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.jaxrs.JaxRsComponent;
 import com.enonic.xp.schema.content.ContentType;
 import com.enonic.xp.schema.content.ContentTypeName;
-import com.enonic.xp.schema.content.ContentTypeNames;
 import com.enonic.xp.schema.content.ContentTypeService;
 import com.enonic.xp.schema.content.GetContentTypeParams;
 import com.enonic.xp.schema.mixin.MixinService;
@@ -172,7 +169,6 @@ public final class XDataResource
 
     private Boolean isXDataAllowed( final XDataName xDataName, final String allowContentType, final ContentTypeName contentTypeName )
     {
-
         if ( nullToEmpty( allowContentType ).isBlank() )
         {
             return true;
@@ -186,21 +182,9 @@ public final class XDataResource
         final ContentTypeNameWildcardResolver contentTypeNameWildcardResolver =
             new ContentTypeNameWildcardResolver( this.contentTypeService );
 
-        final List<String> allowContentTypes =
-            nullToEmpty( allowContentType ).isBlank() ? new ArrayList<>() : Collections.singletonList( allowContentType );
+        final List<String> validContentTypes =
+            contentTypeNameWildcardResolver.resolveWildcards( List.of( allowContentType ), xDataName.getApplicationKey() );
 
-        if ( contentTypeNameWildcardResolver.anyTypeHasWildcard( allowContentTypes ) )
-        {
-            final ContentTypeNames validContentTypes = ContentTypeNames.from(
-                contentTypeNameWildcardResolver.resolveWildcards( allowContentTypes, xDataName.getApplicationKey() ) );
-
-            if ( validContentTypes.contains( contentTypeName ) )
-            {
-                return true;
-            }
-        }
-
-        final List<String> validContentTypes = contentTypeNameWildcardResolver.resolveContentTypeName( allowContentType );
         return validContentTypes.contains( contentTypeName.toString() );
     }
 
