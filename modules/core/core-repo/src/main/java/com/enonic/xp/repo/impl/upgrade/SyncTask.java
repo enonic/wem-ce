@@ -3,7 +3,6 @@ package com.enonic.xp.repo.impl.upgrade;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -253,7 +252,7 @@ final class SyncTask
         try
         {
 
-            this.versionService.delete( Set.of( metadata.getNodeVersionId() ), draftInternalContext );
+//            this.versionService.delete( Set.of( metadata.getNodeVersionId() ), draftInternalContext );
 
             final BlobKey newNodeKey = blobStore.addRecord( nodeSegment, ByteSource.wrap( nodeJsonString ) ).getKey();
 
