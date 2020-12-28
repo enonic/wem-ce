@@ -14,6 +14,7 @@ import com.enonic.xp.app.ApplicationInvalidationLevel;
 import com.enonic.xp.app.ApplicationInvalidator;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.app.ApplicationService;
+import com.enonic.xp.core.impl.app.resolver.ApplicationUrlResolver;
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceKeys;
@@ -48,25 +49,10 @@ public final class ResourceServiceImpl
             orElse( new UrlResource( key, null ) );
     }
 
-    private String normalize( final String str )
-    {
-        if ( str.startsWith( "/" ) )
-        {
-            return normalize( str.substring( 1 ) );
-        }
-
-        if ( str.endsWith( "/" ) )
-        {
-            return str.substring( 0, str.length() - 1 );
-        }
-
-        return str;
-    }
-
     @Override
     public ResourceKeys findFiles( final ApplicationKey key, final String pattern )
     {
-        final Pattern compiled = Pattern.compile( normalize( pattern ) );
+        final Pattern compiled = Pattern.compile( ApplicationUrlResolver.normalizePath( pattern ) );
 
         return ResourceKeys.from( findApplication( key ).
             map( Application::getFiles ).orElse( Set.of() ).

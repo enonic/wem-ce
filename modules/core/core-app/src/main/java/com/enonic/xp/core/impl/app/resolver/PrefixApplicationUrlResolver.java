@@ -5,7 +5,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public final class PrefixApplicationUrlResolver
-    extends ApplicationUrlResolverBase
+    implements ApplicationUrlResolver
 {
     private final ApplicationUrlResolver resolver;
 
@@ -14,7 +14,7 @@ public final class PrefixApplicationUrlResolver
     public PrefixApplicationUrlResolver( final ApplicationUrlResolver resolver, final String prefix )
     {
         this.resolver = resolver;
-        this.prefix = normalizePath( prefix ) + "/";
+        this.prefix = ApplicationUrlResolver.normalizePath( prefix ) + "/";
     }
 
     @Override
@@ -29,7 +29,7 @@ public final class PrefixApplicationUrlResolver
     @Override
     public URL findUrl( final String path )
     {
-        final String normalized = this.prefix + normalizePath( path );
+        final String normalized = this.prefix + ApplicationUrlResolver.normalizePath( path );
         return this.resolver.findUrl( normalized );
     }
 }

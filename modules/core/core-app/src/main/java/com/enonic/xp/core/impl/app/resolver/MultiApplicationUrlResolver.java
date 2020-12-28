@@ -1,8 +1,9 @@
 package com.enonic.xp.core.impl.app.resolver;
 
 import java.net.URL;
-import java.util.HashSet;
+import java.util.Arrays;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class MultiApplicationUrlResolver
     implements ApplicationUrlResolver
@@ -17,13 +18,7 @@ public final class MultiApplicationUrlResolver
     @Override
     public Set<String> findFiles()
     {
-        final Set<String> set = new HashSet<>();
-        for ( final ApplicationUrlResolver resolver : this.list )
-        {
-            set.addAll( resolver.findFiles() );
-        }
-
-        return set;
+        return Arrays.stream( this.list ).flatMap( resolver -> resolver.findFiles().stream() ).collect( Collectors.toSet() );
     }
 
     @Override

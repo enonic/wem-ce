@@ -2,6 +2,7 @@ package com.enonic.xp.core.impl.app.resource;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ public class ResourceServiceImplTest
 
         final MockApplication app = new MockApplication();
         app.setStarted( true );
-        app.setUrlResolver( ClassLoaderApplicationUrlResolver.create( this.appDir.toUri().toURL() ) );
+        app.setUrlResolver( ClassLoaderApplicationUrlResolver.create( List.of( this.appDir.toUri().toURL() ) ) );
 
         Mockito.when( applicationService.getInstalledApplication( this.appKey ) ).thenReturn( app );
 

@@ -23,7 +23,7 @@ public final class MacroKey
     {
         this.applicationKey = applicationKey;
         this.name = CharacterChecker.check( name, "Not a valid Macro name [" + name + "]" );
-        this.refString = applicationKey.toString() + SEPARATOR + name;
+        this.refString = applicationKey + SEPARATOR + name;
     }
 
     public ApplicationKey getApplicationKey()

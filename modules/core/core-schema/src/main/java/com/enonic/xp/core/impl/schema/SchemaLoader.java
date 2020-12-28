@@ -1,7 +1,8 @@
 package com.enonic.xp.core.impl.schema;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.io.Files;
 
@@ -26,7 +27,7 @@ public abstract class SchemaLoader<N extends BaseSchemaName, V extends BaseSchem
     {
         this.resourceService = resourceService;
         this.path = path;
-        this.pattern = this.path + "/.+\\.xml";
+        this.pattern = this.path + "/(.+)/\\1\\.xml$";
     }
 
     public final V get( final N name )
@@ -82,17 +83,12 @@ public abstract class SchemaLoader<N extends BaseSchemaName, V extends BaseSchem
 
     public final Set<N> findNames( final ApplicationKey key )
     {
-        final Set<N> keys = new LinkedHashSet<>();
-        for ( final ResourceKey resource : this.resourceService.findFiles( key, this.pattern ) )
-        {
-            final String localName = getLocalName( resource );
-            if ( localName != null )
-            {
-                keys.add( newName( key, localName ) );
-            }
-        }
-
-        return keys;
+        return this.resourceService.findFiles( key, this.pattern ).
+            stream().
+            map( resource -> getLocalName( resource ) ).
+            filter( localName -> localName != null ).
+            map( localName -> newName( key, localName ) ).
+            collect( Collectors.toCollection( HashSet::new ) );
     }
 
     protected abstract N newName( final ApplicationKey appKey, final String name );

@@ -27,7 +27,7 @@ public final class DescriptorKey
     {
         this.applicationKey = applicationKey;
         this.name = CharacterChecker.check( name, "Not a valid name for DescriptorKey [" + name + "]" );
-        this.refString = applicationKey.toString() + SEPARATOR + name;
+        this.refString = applicationKey + SEPARATOR + name;
     }
 
     public ApplicationKey getApplicationKey()

@@ -12,7 +12,7 @@ import org.osgi.framework.Bundle;
 import com.google.common.collect.ImmutableSet;
 
 public final class BundleApplicationUrlResolver
-    extends ApplicationUrlResolverBase
+    implements ApplicationUrlResolver
 {
     private final Bundle bundle;
 
@@ -38,15 +38,16 @@ public final class BundleApplicationUrlResolver
     {
         final Iterator<URL> urls = this.bundle.findEntries( "/", "*", true ).asIterator();
         return StreamSupport.stream( Spliterators.spliteratorUnknownSize( urls, Spliterator.ORDERED ), false ).
-            map( url -> url.getFile().substring( 1 ) ).
+            map( url -> url.getFile() ).
             filter( name -> !name.endsWith( "/" ) ).
+            map( name -> name.substring( 1 ) ).
             collect( ImmutableSet.toImmutableSet() );
     }
 
     @Override
     public URL findUrl( final String path )
     {
-        final String normalized = normalizePath( path );
+        final String normalized = ApplicationUrlResolver.normalizePath( path );
         return this.bundle.getResource( normalized );
     }
 }

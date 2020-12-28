@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -12,6 +13,7 @@ import com.enonic.xp.app.Application;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.app.ApplicationKeys;
 import com.enonic.xp.app.ApplicationService;
+import com.enonic.xp.descriptor.DescriptorKeyLocator;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.macro.MacroDescriptor;
 import com.enonic.xp.macro.MacroDescriptorService;
@@ -169,7 +171,10 @@ public final class MacroDescriptorServiceImpl
 
     private Set<MacroKey> findDescriptorKeys( final ApplicationKey key )
     {
-        return new MacroDescriptorKeyLocator( this.resourceService, PATH ).findKeys( key );
+        return new DescriptorKeyLocator( this.resourceService, PATH, true ).
+            findKeys( key ).
+            stream().
+            map( dk -> MacroKey.from( dk.getApplicationKey(), dk.getName() ) ).collect( Collectors.toCollection( LinkedHashSet::new ) );
     }
 
     @Reference

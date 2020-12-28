@@ -26,7 +26,7 @@ public final class ServiceDescriptorServiceImpl
 {
     private static final Logger LOG = LoggerFactory.getLogger( ServiceDescriptorServiceImpl.class );
 
-    private static final String ROOT_PATH = "/services";
+    private static final String PATH = "/services";
 
     private ResourceService resourceService;
 
@@ -111,12 +111,7 @@ public final class ServiceDescriptorServiceImpl
 
     private Iterable<DescriptorKey> findDescriptorKeys( final ApplicationKey key )
     {
-        return findDescriptorKeys( ROOT_PATH, key );
-    }
-
-    private Iterable<DescriptorKey> findDescriptorKeys( final String path, final ApplicationKey key )
-    {
-        return new DescriptorKeyLocator( this.resourceService, path, true ).findKeys( key );
+        return new DescriptorKeyLocator( this.resourceService, PATH, true ).findKeys( key );
     }
 
     @Reference

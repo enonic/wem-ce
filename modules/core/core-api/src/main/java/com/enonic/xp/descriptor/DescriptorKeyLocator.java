@@ -1,7 +1,8 @@
 package com.enonic.xp.descriptor;
 
-import java.util.LinkedHashSet;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.io.Files;
 
@@ -22,22 +23,16 @@ public final class DescriptorKeyLocator
     {
         this.service = service;
         this.path = path;
-        this.pattern = this.path + "/.+\\.(xml" + ( optional ? "|js" : "" ) + ")";
+        this.pattern = this.path + "/(.+)/\\1\\.(?:xml" + ( optional ? "|js" : "" ) + ")$";
     }
 
     public Set<DescriptorKey> findKeys( final ApplicationKey key )
     {
-        final Set<DescriptorKey> keys = new LinkedHashSet<>();
-        for ( final ResourceKey resource : this.service.findFiles( key, this.pattern ) )
-        {
-            final DescriptorKey descriptorKey = newDescriptorKey( key, resource );
-            if ( descriptorKey != null )
-            {
-                keys.add( descriptorKey );
-            }
-        }
-
-        return keys;
+        return this.service.findFiles( key, this.pattern ).
+            stream().
+            map( resource -> newDescriptorKey( key, resource ) ).
+            filter( dk -> dk != null ).
+            collect( Collectors.toCollection( HashSet::new ) );
     }
 
     private DescriptorKey newDescriptorKey( final ApplicationKey appKey, final ResourceKey key )

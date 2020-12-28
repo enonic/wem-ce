@@ -127,7 +127,7 @@ public final class LocaleServiceImpl
         final Set<Locale> locales = new LinkedHashSet<>();
         for ( final String bundleName : bundleNames )
         {
-            final String bundlePattern = Pattern.quote( bundleName ) + ".*\\.properties";
+            final String bundlePattern = Pattern.quote( bundleName ) + ".+\\.properties$";
             final ResourceKeys resourceKeys = resourceService.findFiles( applicationKey, bundlePattern );
             for ( ResourceKey resourceKey : resourceKeys )
             {
@@ -137,7 +137,7 @@ public final class LocaleServiceImpl
                 }
             }
         }
-        return new LinkedHashSet<>( locales );
+        return locales;
     }
 
     private Locale localeFromResource( final String resourceName )
