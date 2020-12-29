@@ -1,6 +1,5 @@
 package com.enonic.xp.script.impl.function;
 
-import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -24,7 +23,7 @@ public class ResolverTestSupport
         throws Exception
     {
         //TODO @TempDir JUnit5 suits better, but tests fail due to https://bugs.openjdk.java.net/browse/JDK-6956385
-        temporaryFolder = Files.createTempDirectory("resolverTestSupport");
+        temporaryFolder = Files.createTempDirectory( "resolverTestSupport" );
         this.resourceService = Mockito.mock( ResourceService.class );
         Mockito.when( this.resourceService.getResource( Mockito.any() ) ).then( this::loadResource );
     }
@@ -38,8 +37,8 @@ public class ResolverTestSupport
     private Resource loadResource( final ResourceKey key )
         throws Exception
     {
-        final File file = new File( this.temporaryFolder.toFile(), key.getPath() );
-        return new UrlResource( key, file.toURI().toURL() );
+        final Path filePath = Path.of( this.temporaryFolder.toString(), key.getPath() );
+        return new UrlResource( key, filePath.toUri().toURL() );
     }
 
     final void touchFile( final String path )

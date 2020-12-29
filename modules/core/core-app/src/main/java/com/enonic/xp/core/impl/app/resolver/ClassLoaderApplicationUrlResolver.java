@@ -2,7 +2,6 @@ package com.enonic.xp.core.impl.app.resolver;
 
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -47,8 +46,8 @@ public final class ClassLoaderApplicationUrlResolver
         return this.loader.getResource( normalized );
     }
 
-    public static ClassLoaderApplicationUrlResolver create( final Collection<URL> urls )
+    public static ClassLoaderApplicationUrlResolver create( final URL... urls )
     {
-        return new ClassLoaderApplicationUrlResolver( new URLClassLoader( urls.toArray( URL[]::new ), null ) );
+        return new ClassLoaderApplicationUrlResolver( new URLClassLoader( urls, null ) );
     }
 }

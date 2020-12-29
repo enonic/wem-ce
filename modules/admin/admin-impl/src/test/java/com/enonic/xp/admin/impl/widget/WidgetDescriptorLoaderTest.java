@@ -16,6 +16,7 @@ import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.security.PrincipalKey;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -71,7 +72,7 @@ public class WidgetDescriptorLoaderTest
     public void testFind()
     {
         final DescriptorKeys keys = this.loader.find( ApplicationKey.from( "myapp1" ) );
-        assertEquals( "[myapp1:widget1, myapp1:widget2]", keys.toString() );
+        assertThat( keys ).containsExactlyInAnyOrder( DescriptorKey.from( "myapp1:widget1" ), DescriptorKey.from( "myapp1:widget2" ) );
     }
 
     @Test

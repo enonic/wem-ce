@@ -14,7 +14,7 @@ public final class PrefixApplicationUrlResolver
     public PrefixApplicationUrlResolver( final ApplicationUrlResolver resolver, final String prefix )
     {
         this.resolver = resolver;
-        this.prefix = ApplicationUrlResolver.normalizePath( prefix ) + "/";
+        this.prefix = ( prefix.startsWith( "/" ) ? prefix.substring( 1 ) : prefix ) + "/";
     }
 
     @Override

@@ -1,7 +1,7 @@
 package com.enonic.xp.core.impl.app;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +32,7 @@ public class ApplicationRepoServiceImplTest
     public void setUp()
         throws Exception
     {
-        this.rootTestUrl = new File( "./src/test/resources" ).toURI().toURL();
+        this.rootTestUrl = Path.of( "src/test/resources" ).toUri().toURL();
 
         this.service = new ApplicationRepoServiceImpl( this.nodeService, this.indexService );
     }

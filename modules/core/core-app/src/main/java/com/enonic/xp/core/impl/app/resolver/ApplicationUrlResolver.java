@@ -11,16 +11,17 @@ public interface ApplicationUrlResolver
 
     public static String normalizePath( final String path )
     {
-        if ( path.startsWith( "/" ) )
-        {
-            return normalizePath( path.substring( 1 ) );
-        }
+        return stripLeasdingSlashes( path );
+    }
 
-        if ( path.endsWith( "/" ) )
+    private static String stripLeasdingSlashes( String str )
+    {
+        int length = str.length();
+        int pos = 0;
+        while ( pos != length && str.charAt( pos ) == '/' )
         {
-            return path.substring( 0, path.length() - 1 );
+            pos++;
         }
-
-        return path;
+        return str.substring( pos );
     }
 }

@@ -24,6 +24,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.notNull;
 
 public class WidgetDescriptorServiceTest
 {
@@ -93,10 +95,11 @@ public class WidgetDescriptorServiceTest
     public void get_by_application()
         throws Exception
     {
-        Mockito.when( this.resourceService.findFiles( ApplicationKey.from( "app" ), "/admin/widgets/.+\\.(xml|js)" ) ).thenReturn(
+        final ApplicationKey applicationKey = ApplicationKey.from( "app" );
+        Mockito.when( this.resourceService.findFiles( eq( applicationKey ), notNull() ) ).thenReturn(
             ResourceKeys.from( ResourceKey.from( "app:admin/widgets/d/d.xml" ), ResourceKey.from( "app:admin/widgets/c/c.xml" ) ) );
 
-        final Descriptors<WidgetDescriptor> result = this.service.getByApplication( ApplicationKey.from( "app" ) );
+        final Descriptors<WidgetDescriptor> result = this.service.getByApplication( applicationKey );
 
         assertEquals( 2, result.getSize() );
         assertTrue( result.contains( widgetDescriptor3 ) );

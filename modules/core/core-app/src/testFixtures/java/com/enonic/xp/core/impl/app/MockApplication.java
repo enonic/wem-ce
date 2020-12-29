@@ -1,7 +1,6 @@
 package com.enonic.xp.core.impl.app;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.time.Instant;
 import java.util.Set;
 
@@ -140,16 +139,9 @@ public class MockApplication
         this.urlResolver = urlResolver;
     }
 
-    private void setClassLoaderUrlResolver( final URLClassLoader loader, final String prefix )
-    {
-        final ApplicationUrlResolver resolver = new ClassLoaderApplicationUrlResolver( loader );
-        final ApplicationUrlResolver prefixedReslver = new PrefixApplicationUrlResolver( resolver, prefix );
-        setUrlResolver( prefixedReslver );
-    }
-
     public void setUrlResolver( final URL root, final String prefix )
     {
-        setClassLoaderUrlResolver( new URLClassLoader( new URL[]{root}, null ), prefix );
+        setUrlResolver( new PrefixApplicationUrlResolver( ClassLoaderApplicationUrlResolver.create( root ), prefix ) );
     }
 
     public void setStarted( final boolean started )

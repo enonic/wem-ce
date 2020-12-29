@@ -27,6 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.notNull;
 
 public class LocaleServiceImplTest
 {
@@ -139,8 +140,7 @@ public class LocaleServiceImplTest
                                "myapplication:/i18n/myphrases_en_US_1.properties", "myapplication:/i18n/myphrases_fr.properties",
                                "myapplication:/i18n/myphrases_ca.properties" );
 
-        Mockito.when( resourceService.findFiles( Mockito.any(), Mockito.eq( "\\Q/phrases\\E.*\\.properties" ) ) ).thenReturn(
-            resourceKeys );
+        Mockito.when( resourceService.findFiles( Mockito.any(), notNull() ) ).thenReturn( resourceKeys );
 
         final Set<Locale> locales = localeService.getLocales( ApplicationKey.from( "myapplication" ), "/phrases" );
 

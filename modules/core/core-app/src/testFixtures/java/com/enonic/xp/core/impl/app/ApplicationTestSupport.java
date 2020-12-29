@@ -1,7 +1,7 @@
 package com.enonic.xp.core.impl.app;
 
-import java.io.File;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,7 +30,7 @@ public abstract class ApplicationTestSupport
     public final void setup()
         throws Exception
     {
-        this.rootTestUrl = new File( "./src/test/resources" ).toURI().toURL();
+        this.rootTestUrl = Path.of( "src/test/resources" ).toUri().toURL();
 
         this.apps = new HashMap<>();
 

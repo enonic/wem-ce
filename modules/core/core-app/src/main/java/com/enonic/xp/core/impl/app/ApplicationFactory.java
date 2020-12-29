@@ -2,7 +2,6 @@ package com.enonic.xp.core.impl.app;
 
 import java.net.URL;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.osgi.framework.Bundle;
@@ -58,31 +57,19 @@ final class ApplicationFactory
 
     private ApplicationUrlResolver createClassLoaderUrlResolver( final List<String> paths )
     {
-        final List<URL> urls = getSearchPathUrls( paths );
-        return ClassLoaderApplicationUrlResolver.create( urls );
+        return ClassLoaderApplicationUrlResolver.create( getSearchPathUrls( paths ) );
     }
 
-    private List<URL> getSearchPathUrls( final List<String> paths )
+    private URL[] getSearchPathUrls( final List<String> paths )
     {
-        final List<URL> result = new ArrayList<>();
-        for ( final String path : paths )
-        {
-            final URL url = getSearchPathUrl( path );
-            if ( url != null )
-            {
-                result.add( url );
-            }
-        }
-
-        return result;
+        return paths.stream().map( this::getSearchPathUrl ).filter( url -> url != null ).toArray( URL[]::new );
     }
 
     private URL getSearchPathUrl( final String path )
     {
         try
         {
-            final Path file = Path.of( path );
-            return file.toUri().toURL();
+            return Path.of( path ).toUri().toURL();
         }
         catch ( final Exception e )
         {
