@@ -1,6 +1,7 @@
 package com.enonic.xp.admin.impl.widget;
 
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,6 @@ import com.enonic.xp.descriptor.DescriptorService;
 import com.enonic.xp.descriptor.Descriptors;
 import com.enonic.xp.page.DescriptorKey;
 import com.enonic.xp.resource.ResourceKey;
-import com.enonic.xp.resource.ResourceKeys;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.security.PrincipalKey;
 import com.enonic.xp.security.auth.AuthenticationInfo;
@@ -25,7 +25,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.notNull;
 
 public class WidgetDescriptorServiceTest
 {
@@ -96,8 +95,8 @@ public class WidgetDescriptorServiceTest
         throws Exception
     {
         final ApplicationKey applicationKey = ApplicationKey.from( "app" );
-        Mockito.when( this.resourceService.findFiles( eq( applicationKey ), notNull() ) ).thenReturn(
-            ResourceKeys.from( ResourceKey.from( "app:admin/widgets/d/d.xml" ), ResourceKey.from( "app:admin/widgets/c/c.xml" ) ) );
+        Mockito.when( this.resourceService.findFiles( eq( applicationKey ) ) ).thenReturn(
+            Stream.of( ResourceKey.from( "app:admin/widgets/d/d.xml" ), ResourceKey.from( "app:admin/widgets/c/c.xml" ) ) );
 
         final Descriptors<WidgetDescriptor> result = this.service.getByApplication( applicationKey );
 

@@ -53,7 +53,7 @@ public final class ApplicationKey
 
     public static ApplicationKey from( final Bundle bundle )
     {
-        return ApplicationKey.from( bundle.getSymbolicName() );
+        return from( bundle.getSymbolicName() );
     }
 
     public static ApplicationKey from( final Class<?> clzz )
@@ -63,7 +63,7 @@ public final class ApplicationKey
 
     public static ApplicationKey from( final String name, final String preffix )
     {
-        return new ApplicationKey( name != null ? name.replace( preffix, "." ) : "" );
+        return from( name != null ? name.replace( preffix, "." ) : null );
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.enonic.xp.core.impl.app.resource;
 import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -59,6 +60,15 @@ public final class ResourceServiceImpl
             stream().
             filter( compiled.asPredicate() ).
             map( name -> ResourceKey.from( key, name ) ).iterator() );
+    }
+
+    @Override
+    public Stream<ResourceKey> findFiles( final ApplicationKey key )
+    {
+        return findApplication( key ).
+            map( Application::getFiles ).orElse( Set.of() ).
+            stream().
+            map( name -> ResourceKey.from( key, name ) );
     }
 
     private Optional<Application> findApplication( final ApplicationKey key )

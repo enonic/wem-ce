@@ -1,10 +1,7 @@
 package com.enonic.xp.descriptor;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.common.io.Files;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.page.DescriptorKey;
@@ -17,34 +14,37 @@ public final class DescriptorKeyLocator
 
     private final String path;
 
-    private final String pattern;
+    private final boolean optional;
 
     public DescriptorKeyLocator( final ResourceService service, final String path, final boolean optional )
     {
         this.service = service;
         this.path = path;
-        this.pattern = this.path + "/(.+)/\\1\\.(?:xml" + ( optional ? "|js" : "" ) + ")$";
+        this.optional = optional;
     }
 
     public Set<DescriptorKey> findKeys( final ApplicationKey key )
     {
-        return this.service.findFiles( key, this.pattern ).
-            stream().
-            map( resource -> newDescriptorKey( key, resource ) ).
+        return this.service.findFiles( key ).
+            map( resource -> newDescriptorKey( resource ) ).
             filter( dk -> dk != null ).
-            collect( Collectors.toCollection( HashSet::new ) );
+            collect( Collectors.toSet() );
     }
 
-    private DescriptorKey newDescriptorKey( final ApplicationKey appKey, final ResourceKey key )
+    private DescriptorKey newDescriptorKey( final ResourceKey key )
     {
-        final String nameWithExt = key.getName();
-        final String nameWithoutExt = Files.getNameWithoutExtension( nameWithExt );
+        final String extension = key.getExtension();
 
-        if ( key.getPath().equals( this.path + "/" + nameWithoutExt + "/" + nameWithExt ) )
+        if ( "xml".equals( extension ) || ( optional && "js".equals( extension ) ) )
         {
-            return DescriptorKey.from( appKey, nameWithoutExt );
-        }
+            final String nameWithExt = key.getName();
+            final String nameWithoutExt = nameWithExt.substring( 0, nameWithExt.length() - ( extension.length() + 1 ) );
 
+            if ( key.getPath().equals( this.path + "/" + nameWithoutExt + "/" + nameWithExt ) )
+            {
+                return DescriptorKey.from( key.getApplicationKey(), nameWithoutExt );
+            }
+        }
         return null;
     }
 }

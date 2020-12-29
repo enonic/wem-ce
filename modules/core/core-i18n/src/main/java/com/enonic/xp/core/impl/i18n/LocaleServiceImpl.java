@@ -2,16 +2,18 @@ package com.enonic.xp.core.impl.i18n;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
@@ -28,10 +30,10 @@ import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.i18n.MessageBundle;
 import com.enonic.xp.resource.Resource;
 import com.enonic.xp.resource.ResourceKey;
-import com.enonic.xp.resource.ResourceKeys;
 import com.enonic.xp.resource.ResourceService;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toCollection;
 import static java.util.stream.Collectors.toSet;
 
 @Component(immediate = true)
@@ -59,7 +61,7 @@ public final class LocaleServiceImpl
     @Override
     public MessageBundle getBundle( final ApplicationKey applicationKey, final Locale locale )
     {
-        return getBundle( applicationKey, locale, "site/i18n/phrases", "i18n/phrases" );
+        return getBundle( applicationKey, locale, "/site/i18n/phrases", "/i18n/phrases" );
     }
 
     @Override
@@ -81,8 +83,12 @@ public final class LocaleServiceImpl
             return Collections.emptySet();
         }
 
-        final String key = appBundlesCacheKey( applicationKey, bundleNames );
-        return this.appLocalesCache.computeIfAbsent( key, k -> getAppLocales( applicationKey, bundleNames ) );
+        final Set<String> bundleNameSet = Arrays.stream( bundleNames ).
+            map( bn -> bn.startsWith( "/" ) ? bn : "/" + bn ).
+            collect( toCollection( TreeSet::new ) );
+
+        final String key = appBundlesCacheKey( applicationKey, bundleNameSet );
+        return this.appLocalesCache.computeIfAbsent( key, k -> getAppLocales( applicationKey, bundleNameSet ) );
     }
 
     @Override
@@ -94,7 +100,7 @@ public final class LocaleServiceImpl
         }
         if ( bundleNames == null || bundleNames.length == 0 )
         {
-            bundleNames = new String[]{"site/i18n/phrases", "i18n/phrases"};
+            bundleNames = new String[]{"/site/i18n/phrases", "/i18n/phrases"};
         }
 
         final Set<String> supportedLocales = this.getLocales( applicationKey, bundleNames ).stream().
@@ -121,23 +127,15 @@ public final class LocaleServiceImpl
         return null;
     }
 
-    private Set<Locale> getAppLocales( final ApplicationKey applicationKey, final String... bundleNames )
+    private Set<Locale> getAppLocales( final ApplicationKey applicationKey, final Set<String> bundleNames )
     {
         LOG.debug( "Create app locales for {}", applicationKey );
-        final Set<Locale> locales = new LinkedHashSet<>();
-        for ( final String bundleName : bundleNames )
-        {
-            final String bundlePattern = Pattern.quote( bundleName ) + ".+\\.properties$";
-            final ResourceKeys resourceKeys = resourceService.findFiles( applicationKey, bundlePattern );
-            for ( ResourceKey resourceKey : resourceKeys )
-            {
-                if ( resourceService.getResource( resourceKey ).exists() )
-                {
-                    locales.add( localeFromResource( resourceKey.getName() ) );
-                }
-            }
-        }
-        return locales;
+
+        return resourceService.findFiles( applicationKey ).
+            filter( resourceKey -> "properties".equals( resourceKey.getExtension() ) &&
+                bundleNames.stream().anyMatch( s -> resourceKey.getPath().startsWith( s ) ) ).
+            map( resourceKey -> localeFromResource( resourceKey.getName() ) ).
+            collect( Collectors.toSet() );
     }
 
     private Locale localeFromResource( final String resourceName )
@@ -182,18 +180,9 @@ public final class LocaleServiceImpl
         return key.toString();
     }
 
-    private String appBundlesCacheKey( final ApplicationKey applicationKey, final String... bundleNames )
+    private String appBundlesCacheKey( final ApplicationKey applicationKey, final Set<String> bundleNames )
     {
-        StringJoiner key = new StringJoiner( KEY_SEPARATOR ).
-            add( applicationKey.toString() );
-        if ( bundleNames != null )
-        {
-            for ( String bundleName : bundleNames )
-            {
-                key.add( bundleName );
-            }
-        }
-        return key.toString();
+        return Stream.concat( Stream.of( applicationKey.toString() ), bundleNames.stream() ).collect( Collectors.joining( KEY_SEPARATOR ) );
     }
 
     private MessageBundle getMessageBundle( final ApplicationKey applicationKey, final Locale locale, final String... bundleNames )

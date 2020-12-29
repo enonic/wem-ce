@@ -174,7 +174,7 @@ public final class MacroDescriptorServiceImpl
         return new DescriptorKeyLocator( this.resourceService, PATH, true ).
             findKeys( key ).
             stream().
-            map( dk -> MacroKey.from( dk.getApplicationKey(), dk.getName() ) ).collect( Collectors.toCollection( LinkedHashSet::new ) );
+            map( dk -> MacroKey.from( dk.getApplicationKey(), dk.getName() ) ).collect( Collectors.toSet() );
     }
 
     @Reference

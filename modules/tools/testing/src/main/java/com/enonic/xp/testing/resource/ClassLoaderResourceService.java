@@ -1,6 +1,7 @@
 package com.enonic.xp.testing.resource;
 
 import java.net.URL;
+import java.util.stream.Stream;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.resource.Resource;
@@ -29,6 +30,12 @@ public final class ClassLoaderResourceService
 
     @Override
     public ResourceKeys findFiles( final ApplicationKey key, final String pattern )
+    {
+        throw new IllegalStateException( "Not implemented" );
+    }
+
+    @Override
+    public Stream<ResourceKey> findFiles( final ApplicationKey key )
     {
         throw new IllegalStateException( "Not implemented" );
     }

@@ -1,10 +1,7 @@
 package com.enonic.xp.core.impl.schema;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import com.google.common.io.Files;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.icon.Icon;
@@ -19,15 +16,12 @@ public abstract class SchemaLoader<N extends BaseSchemaName, V extends BaseSchem
 {
     private final String path;
 
-    private final String pattern;
-
     private final ResourceService resourceService;
 
     public SchemaLoader( final ResourceService resourceService, final String path )
     {
         this.resourceService = resourceService;
         this.path = path;
-        this.pattern = this.path + "/(.+)/\\1\\.xml$";
     }
 
     public final V get( final N name )
@@ -83,24 +77,26 @@ public abstract class SchemaLoader<N extends BaseSchemaName, V extends BaseSchem
 
     public final Set<N> findNames( final ApplicationKey key )
     {
-        return this.resourceService.findFiles( key, this.pattern ).
-            stream().
+        return this.resourceService.findFiles( key ).
             map( resource -> getLocalName( resource ) ).
             filter( localName -> localName != null ).
             map( localName -> newName( key, localName ) ).
-            collect( Collectors.toCollection( HashSet::new ) );
+            collect( Collectors.toSet() );
     }
 
     protected abstract N newName( final ApplicationKey appKey, final String name );
 
     private String getLocalName( final ResourceKey key )
     {
-        final String nameWithExt = key.getName();
-        final String nameWithoutExt = Files.getNameWithoutExtension( nameWithExt );
-
-        if ( key.getPath().equals( this.path + "/" + nameWithoutExt + "/" + nameWithExt ) )
+        if ( "xml".equals( key.getExtension() ) )
         {
-            return nameWithoutExt;
+            final String nameWithExt = key.getName();
+            final String nameWithoutExt = nameWithExt.substring( 0, nameWithExt.length() - 4 );
+
+            if ( key.getPath().equals( this.path + "/" + nameWithoutExt + "/" + nameWithExt ) )
+            {
+                return nameWithoutExt;
+            }
         }
 
         return null;

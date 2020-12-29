@@ -11,8 +11,6 @@ import com.enonic.xp.app.ApplicationKey;
 @PublicApi
 public final class ResourceKey
 {
-    private final String uri;
-
     private final ApplicationKey applicationKey;
 
     private final String path;
@@ -20,13 +18,12 @@ public final class ResourceKey
     private ResourceKey( final ApplicationKey applicationKey, final String path )
     {
         this.applicationKey = applicationKey;
-        this.path = normalizePath( path );
-        this.uri = this.applicationKey.toString() + ":" + this.path;
+        this.path = path;
     }
 
     public String getUri()
     {
-        return this.uri;
+        return this.applicationKey + ":" + this.path;
     }
 
     public ApplicationKey getApplicationKey()
@@ -71,15 +68,15 @@ public final class ResourceKey
         // absolute path
         if ( relPath.startsWith( "/" ) )
         {
-            return new ResourceKey( this.applicationKey, relPath );
+            return from( this.applicationKey, relPath );
         }
-        return new ResourceKey( this.applicationKey, this.path + "/" + relPath );
+        return from( this.applicationKey, this.path + "/" + relPath );
     }
 
     @Override
     public String toString()
     {
-        return uri;
+        return getUri();
     }
 
     @Override
@@ -94,13 +91,13 @@ public final class ResourceKey
             return false;
         }
         final ResourceKey that = (ResourceKey) o;
-        return uri.equals( that.uri );
+        return applicationKey.equals( that.applicationKey ) && path.equals( that.path );
     }
 
     @Override
     public int hashCode()
     {
-        return Objects.hash( uri );
+        return Objects.hash( applicationKey, path );
     }
 
     private static String normalizePath( final String path )
@@ -123,6 +120,6 @@ public final class ResourceKey
         Preconditions.checkNotNull( application );
         Preconditions.checkNotNull( path );
 
-        return new ResourceKey( application, path );
+        return new ResourceKey( application, normalizePath( path ) );
     }
 }
