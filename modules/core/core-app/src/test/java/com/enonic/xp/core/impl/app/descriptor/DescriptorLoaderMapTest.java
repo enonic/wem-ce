@@ -10,7 +10,7 @@ public class DescriptorLoaderMapTest
     public void testAddRemove()
     {
         final DescriptorLoaderMap map = new DescriptorLoaderMap();
-        map.facetFactory = new DescriptorFacetFactoryImpl();
+        map.facetFactory = new DescriptorFacetFactoryImpl( null, null );
 
         assertTrue( map.facet( MyDescriptor.class ) instanceof NopDescriptorFacet );
 

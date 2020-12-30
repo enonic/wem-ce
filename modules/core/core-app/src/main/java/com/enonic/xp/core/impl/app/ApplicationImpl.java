@@ -20,7 +20,7 @@ import static com.enonic.xp.core.impl.app.ApplicationHelper.X_SYSTEM_VERSION;
 import static com.enonic.xp.core.impl.app.ApplicationHelper.X_VENDOR_NAME;
 import static com.enonic.xp.core.impl.app.ApplicationHelper.X_VENDOR_URL;
 
-final class ApplicationImpl
+public final class ApplicationImpl
     implements Application
 {
     private final ApplicationKey key;
@@ -159,6 +159,11 @@ final class ApplicationImpl
     public void setConfig( final Configuration config )
     {
         this.config = config;
+    }
+
+    public ApplicationUrlResolver getUrlResolver()
+    {
+        return urlResolver;
     }
 
     @Override

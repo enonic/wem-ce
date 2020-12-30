@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.app.ApplicationKeys;
-import com.enonic.xp.app.ApplicationService;
+import com.enonic.xp.core.impl.app.ApplicationRegistry;
 import com.enonic.xp.descriptor.Descriptor;
 import com.enonic.xp.descriptor.DescriptorKeys;
 import com.enonic.xp.descriptor.DescriptorLoader;
@@ -27,7 +27,7 @@ final class DescriptorFacetImpl<T extends Descriptor>
 
     final DescriptorLoader<T> loader;
 
-    ApplicationService applicationService;
+    ApplicationRegistry applicationRegistry;
 
     ResourceService resourceService;
 
@@ -70,13 +70,13 @@ final class DescriptorFacetImpl<T extends Descriptor>
     @Override
     public Descriptors<T> getAll()
     {
-        return get( this.applicationService.getInstalledApplicationKeys() );
+        return get( this.applicationRegistry.getKeys() );
     }
 
     @Override
     public DescriptorKeys findAll()
     {
-        return find( this.applicationService.getInstalledApplicationKeys() );
+        return find( this.applicationRegistry.getKeys() );
     }
 
     @Override

@@ -12,7 +12,7 @@ public interface ApplicationRegistry
 {
     ApplicationKeys getKeys();
 
-    Application get( ApplicationKey key );
+    ApplicationImpl get( ApplicationKey key );
 
     Applications getAll();
 

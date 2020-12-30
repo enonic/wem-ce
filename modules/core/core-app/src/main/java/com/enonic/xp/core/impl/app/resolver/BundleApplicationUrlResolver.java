@@ -16,8 +16,6 @@ public final class BundleApplicationUrlResolver
 {
     private final Bundle bundle;
 
-    private ImmutableSet<String> files;
-
     public BundleApplicationUrlResolver( final Bundle bundle )
     {
         this.bundle = bundle;
@@ -25,16 +23,6 @@ public final class BundleApplicationUrlResolver
 
     @Override
     public Set<String> findFiles()
-    {
-        if ( this.files == null )
-        {
-            this.files = doFindFiles();
-        }
-
-        return this.files;
-    }
-
-    private ImmutableSet<String> doFindFiles()
     {
         final Iterator<URL> urls = this.bundle.findEntries( "/", "*", true ).asIterator();
         return StreamSupport.stream( Spliterators.spliteratorUnknownSize( urls, Spliterator.ORDERED ), false ).

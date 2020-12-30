@@ -69,7 +69,7 @@ public final class ApplicationKey
     @Override
     public boolean equals( final Object o )
     {
-        return ( o instanceof ApplicationKey ) && this.name.equals( ( (ApplicationKey) o ).name );
+        return this == o || ( o instanceof ApplicationKey && this.name.equals( ( (ApplicationKey) o ).name ) );
     }
 
     @Override

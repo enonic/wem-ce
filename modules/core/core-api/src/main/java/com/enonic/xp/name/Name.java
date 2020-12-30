@@ -29,7 +29,7 @@ public abstract class Name
     private static void validateName( final String name )
     {
         Preconditions.checkNotNull( name, "name cannot be null" );
-        Preconditions.checkArgument( !name.trim().isEmpty(), "name cannot be empty" );
+        Preconditions.checkArgument( !name.isBlank(), "name cannot be empty" );
         Preconditions.checkArgument( NameCharacterHelper.hasNoExplicitIllegal( name ), "Invalid name: '" + name + "'. Cannot contain " +
             Arrays.toString( NameCharacterHelper.getExplicitlyIllegalCharacters() ) );
         checkValidName( name );
