@@ -11,7 +11,6 @@ import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.net.UrlEscapers;
 
-import com.enonic.xp.app.ApplicationService;
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.content.ContentService;
 import com.enonic.xp.exception.NotFoundException;
@@ -21,6 +20,7 @@ import com.enonic.xp.portal.url.AbstractUrlParams;
 import com.enonic.xp.portal.url.UrlTypeConstants;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.repository.RepositoryUtils;
+import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.web.servlet.ServletRequestUrlHelper;
 import com.enonic.xp.web.servlet.UriRewritingResult;
 
@@ -35,7 +35,7 @@ abstract class PortalUrlBuilder<T extends AbstractUrlParams>
 
     protected ContentService contentService;
 
-    protected ApplicationService applicationService;
+    protected ResourceService resourceService;
 
     private String getBaseUri()
     {

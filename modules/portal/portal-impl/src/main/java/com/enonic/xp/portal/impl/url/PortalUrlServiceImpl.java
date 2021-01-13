@@ -5,7 +5,6 @@ import java.util.concurrent.Callable;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import com.enonic.xp.app.ApplicationService;
 import com.enonic.xp.content.ContentService;
 import com.enonic.xp.context.Context;
 import com.enonic.xp.context.ContextAccessor;
@@ -22,6 +21,7 @@ import com.enonic.xp.portal.url.PageUrlParams;
 import com.enonic.xp.portal.url.PortalUrlService;
 import com.enonic.xp.portal.url.ProcessHtmlParams;
 import com.enonic.xp.portal.url.ServiceUrlParams;
+import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.security.RoleKeys;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.style.StyleDescriptorService;
@@ -32,7 +32,7 @@ public final class PortalUrlServiceImpl
 {
     private ContentService contentService;
 
-    private ApplicationService applicationService;
+    private ResourceService resourceService;
 
     private MacroService macroService;
 
@@ -105,7 +105,7 @@ public final class PortalUrlServiceImpl
     {
         builder.setParams( params );
         builder.contentService = this.contentService;
-        builder.applicationService = this.applicationService;
+        builder.resourceService = this.resourceService;
         return runWithAdminRole( builder::build );
     }
 
@@ -116,9 +116,9 @@ public final class PortalUrlServiceImpl
     }
 
     @Reference
-    public void setApplicationService( final ApplicationService applicationService )
+    public void setResourceService( final ResourceService resourceService )
     {
-        this.applicationService = applicationService;
+        this.resourceService = resourceService;
     }
 
     @Reference
