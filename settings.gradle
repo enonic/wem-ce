@@ -46,6 +46,7 @@ include 'core:core-cluster'
 include 'core:core-hazelcast'
 include 'core:core-internal'
 include 'core:core-project'
+include 'core:core-scheduler'
 
 include 'server:server-config'
 include 'server:server-deploy'

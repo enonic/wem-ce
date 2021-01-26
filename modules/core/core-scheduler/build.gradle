@@ -1,0 +1,8 @@
+dependencies {
+    implementation project( ':core:core-api' )
+    implementation project( ':core:core-internal' )
+}
+
+jar {
+    bnd( 'Bundle-Name': 'Enonic XP Core - Scheduler' )
+}
