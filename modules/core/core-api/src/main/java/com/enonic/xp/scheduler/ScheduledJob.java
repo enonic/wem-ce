@@ -1,6 +1,6 @@
 package com.enonic.xp.scheduler;
 
-import java.util.TimeZone;
+import java.io.Serializable;
 
 import com.google.common.base.Preconditions;
 
@@ -11,16 +11,17 @@ import com.enonic.xp.security.PrincipalKey;
 
 @PublicApi
 public final class ScheduledJob
+    implements Serializable
 {
+    private static final long serialVersionUID = 0;
+
     private final SchedulerName name;
 
     private final String description;
 
-    private final Frequency frequency;
+    private final ScheduleCalendar calendar;
 
     private final boolean enabled;
-
-    private final TimeZone timeZone;
 
     private final DescriptorKey descriptor;
 
@@ -34,9 +35,8 @@ public final class ScheduledJob
     {
         this.name = builder.name;
         this.description = builder.description;
-        this.frequency = builder.frequency;
+        this.calendar = builder.calendar;
         this.enabled = builder.enabled;
-        this.timeZone = builder.timeZone;
         this.descriptor = builder.descriptor;
         this.payload = builder.payload;
         this.user = builder.user;
@@ -58,19 +58,14 @@ public final class ScheduledJob
         return description;
     }
 
-    public Frequency getFrequency()
+    public ScheduleCalendar getCalendar()
     {
-        return frequency;
+        return calendar;
     }
 
     public boolean isEnabled()
     {
         return enabled;
-    }
-
-    public TimeZone getTimeZone()
-    {
-        return timeZone;
     }
 
     public DescriptorKey getDescriptor()
@@ -99,15 +94,13 @@ public final class ScheduledJob
 
         private String description;
 
-        private Frequency frequency;
+        private ScheduleCalendar calendar;
 
         private boolean enabled;
 
-        private TimeZone timeZone;
-
         private DescriptorKey descriptor;
 
-        private PropertyTree payload;
+        private PropertyTree payload = new PropertyTree();
 
         private PrincipalKey user;
 
@@ -130,21 +123,15 @@ public final class ScheduledJob
             return this;
         }
 
-        public Builder frequency( final Frequency frequency )
+        public Builder calendar( final ScheduleCalendar calendar )
         {
-            this.frequency = frequency;
+            this.calendar = calendar;
             return this;
         }
 
         public Builder enabled( final boolean enabled )
         {
             this.enabled = enabled;
-            return this;
-        }
-
-        public Builder timeZone( final TimeZone timeZone )
-        {
-            this.timeZone = timeZone;
             return this;
         }
 
@@ -175,6 +162,7 @@ public final class ScheduledJob
         private void validate()
         {
             Preconditions.checkNotNull( name, "name must be set." );
+            Preconditions.checkNotNull( calendar, "calendar must be set." );
         }
 
         public ScheduledJob build()

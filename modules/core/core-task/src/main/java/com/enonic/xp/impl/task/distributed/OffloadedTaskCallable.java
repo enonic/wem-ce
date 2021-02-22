@@ -3,7 +3,7 @@ package com.enonic.xp.impl.task.distributed;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 
-import com.enonic.xp.impl.task.osgi.OsgiSupport;
+import com.enonic.xp.core.internal.osgi.OsgiSupport;
 
 public final class OffloadedTaskCallable
     implements Callable<Void>, Serializable

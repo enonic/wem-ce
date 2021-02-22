@@ -7,6 +7,9 @@ dependencies {
     testImplementation project( ':core:core-media' )
     testImplementation project( ':core:core-site' )
     testImplementation project( ':core:core-project' )
+    testImplementation project( ':core:core-scheduler' )
+
+    testImplementation "com.hazelcast:hazelcast:${hazelcastVersion}"
 
     testImplementation( testFixtures( project( ":core:core-blobstore" ) ) )
     testImplementation( testFixtures( project( ":core:core-repo" ) ) )

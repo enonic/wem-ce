@@ -4,8 +4,8 @@ import java.io.Serializable;
 import java.util.UUID;
 
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.core.internal.osgi.OsgiSupport;
 import com.enonic.xp.data.PropertyTree;
-import com.enonic.xp.impl.task.osgi.OsgiSupport;
 import com.enonic.xp.impl.task.script.NamedTask;
 import com.enonic.xp.impl.task.script.NamedTaskFactory;
 import com.enonic.xp.page.DescriptorKey;

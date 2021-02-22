@@ -11,7 +11,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 
-import com.enonic.xp.impl.task.osgi.OsgiSupportMock;
+import com.enonic.xp.core.internal.osgi.OsgiSupportMock;
 import com.enonic.xp.task.TaskInfo;
 
 import static org.mockito.Mockito.verify;

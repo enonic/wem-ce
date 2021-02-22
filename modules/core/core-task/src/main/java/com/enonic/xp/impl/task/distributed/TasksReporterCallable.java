@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import com.enonic.xp.impl.task.osgi.OsgiSupport;
+import com.enonic.xp.core.internal.osgi.OsgiSupport;
 import com.enonic.xp.task.TaskInfo;
 
 public final class TasksReporterCallable

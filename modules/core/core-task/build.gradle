@@ -7,9 +7,7 @@ dependencies {
     testImplementation( project(":portal:portal-impl")  )
     testImplementation( testFixtures( project(":core:core-api") ) )
     testImplementation( testFixtures( project(":core:core-app") ) )
-
-    testFixturesApi "org.osgi:osgi.core:${osgiVersion}"
-    testFixturesImplementation "org.mockito:mockito-core:${mockitoVersion}"
+    testImplementation( testFixtures( project(":core:core-internal") ) )
 }
 
 jar {

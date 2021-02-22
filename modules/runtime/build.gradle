@@ -99,6 +99,7 @@ addBundle( project( ':core:core-macro' ), 22 )
 addBundle( project( ':core:core-task' ), 22 )
 addBundle( project( ':core:core-audit' ), 22 )
 addBundle( project( ':core:core-project' ), 22 )
+addBundle( project( ':core:core-scheduler' ), 22 )
 addBundle( project( ':core:core-cluster' ), 23 )
 
 // Server bundles

@@ -14,6 +14,7 @@ jar {
          'Import-Package':
              'com.enonic.xp.event;resolution:=optional' + ',' +
              'com.enonic.xp.data;resolution:=optional' + ',' +
+             'com.enonic.xp.scheduler;resolution:=optional' + ',' +
                  'com.enonic.xp.task;resolution:=optional' + ',' +
                  'com.enonic.xp.app;resolution:=optional' + ',' +
                  'com.enonic.xp.page;resolution:=optional' + ',' +
@@ -21,6 +22,7 @@ jar {
                  'com.enonic.xp.branch;resolution:=optional' + ',' +
                  'com.enonic.xp.security.auth;resolution:=optional' + ',' +
                  'com.enonic.xp.impl.task.distributed;resolution:=optional' + ',' +
+                 'com.enonic.xp.impl.scheduler.distributed;resolution:=optional' + ',' +
                  'com.google.common.collect;resolution:=optional,' +
                  '*')
 }

@@ -16,9 +16,9 @@ import org.osgi.framework.Bundle;
 
 import com.enonic.xp.branch.Branch;
 import com.enonic.xp.core.internal.concurrent.RecurringJob;
+import com.enonic.xp.core.internal.osgi.OsgiSupportMock;
 import com.enonic.xp.event.Event;
 import com.enonic.xp.impl.task.distributed.TaskContext;
-import com.enonic.xp.impl.task.osgi.OsgiSupportMock;
 import com.enonic.xp.repository.RepositoryId;
 import com.enonic.xp.security.auth.AuthenticationInfo;
 import com.enonic.xp.task.RunnableTask;

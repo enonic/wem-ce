@@ -30,7 +30,8 @@ public class ApplicationFactoryServiceImpl
     public ApplicationFactoryServiceImpl( final BundleContext context )
     {
         bundleTracker =
-            new BundleTracker<>( context, Bundle.RESOLVED + Bundle.STARTING + Bundle.STOPPING + Bundle.ACTIVE, new Customizer() );
+            new BundleTracker<>( context, Bundle.INSTALLED + Bundle.RESOLVED + Bundle.STARTING + Bundle.STOPPING + Bundle.ACTIVE,
+                                 new Customizer() );
     }
 
     @Activate

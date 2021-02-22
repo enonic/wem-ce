@@ -1,4 +1,4 @@
-package com.enonic.xp.impl.task.osgi;
+package com.enonic.xp.core.internal.osgi;
 
 import org.osgi.framework.Bundle;
 

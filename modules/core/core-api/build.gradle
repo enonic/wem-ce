@@ -12,6 +12,7 @@ dependencies {
     compile "org.slf4j:slf4j-api:${slf4jVersion}"
     compile "com.sun.mail:jakarta.mail:${jakartaMailVersion}"
     compile "io.dropwizard.metrics:metrics-core:${dropwizardMetricsVersion}"
+    compile "com.cronutils:cron-utils:9.1.3"
     implementation project( ':core:core-internal' )
 
     testFixturesImplementation "org.junit.jupiter:junit-jupiter-api:${junitJupiterVersion}"
@@ -22,5 +23,6 @@ dependencies {
 
 jar {
     bnd( 'Bundle-Name': 'Enonic XP Core - Api',
-         'Export-Package': '!com.enonic.xp.core.internal.*,com.enonic.xp.*' )
+         'Export-Package': '!com.enonic.xp.core.internal.*,com.enonic.xp.*',
+         'Private-Package': 'com.cronutils.*, org.apache.commons.*')
 }

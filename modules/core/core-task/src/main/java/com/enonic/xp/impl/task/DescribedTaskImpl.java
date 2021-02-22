@@ -3,9 +3,9 @@ package com.enonic.xp.impl.task;
 import java.util.UUID;
 
 import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.core.internal.osgi.OsgiSupport;
 import com.enonic.xp.impl.task.distributed.DescribedTask;
 import com.enonic.xp.impl.task.distributed.TaskContext;
-import com.enonic.xp.impl.task.osgi.OsgiSupport;
 import com.enonic.xp.impl.task.script.NamedTask;
 import com.enonic.xp.task.ProgressReporter;
 import com.enonic.xp.task.RunnableTask;

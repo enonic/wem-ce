@@ -1,5 +1,8 @@
 dependencies {
+    api "org.osgi:osgi.core:${osgiVersion}"
     implementation 'org.jsoup:jsoup:1.13.1'
+
+    testFixturesImplementation "org.mockito:mockito-core:${mockitoVersion}"
 }
 
 jar {
