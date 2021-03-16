@@ -65,12 +65,12 @@ public class ContentSelectorQueryJsonToContentQueryConverter
     private ContentTypeNames getContentTypeNamesFromJson()
     {
         List<String> contentTypeNames = this.contentQueryJson.getContentTypeNames();
-        if ( contentTypeNames.size() == 0 )
+        if ( contentTypeNames.isEmpty() )
         {
             return this.getContentTypeNamesFromRelationshipType();
         }
 
-        if ( this.content != null && this.contentTypeWildcardResolver.anyTypeHasWildcard( contentTypeNames ) )
+        if ( this.content != null )
         {
             return ContentTypeNames.from(
                 this.contentTypeWildcardResolver.resolveWildcards( contentTypeNames, this.content.getType().getApplicationKey() ) );

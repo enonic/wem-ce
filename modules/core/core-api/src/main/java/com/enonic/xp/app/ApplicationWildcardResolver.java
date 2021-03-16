@@ -23,7 +23,7 @@ public class ApplicationWildcardResolver
 
     public String resolveAppWildcard( final String nameToResolve, final ApplicationKey applicationKey )
     {
-        return nameToResolve.replace( APP_WILDCARD, applicationKey.toString() );
+        return startWithAppWildcard( nameToResolve ) ? nameToResolve.replace( APP_WILDCARD, applicationKey.toString() ) : nameToResolve;
     }
 
 }

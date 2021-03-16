@@ -92,7 +92,7 @@ final class XmlInputTypeConfigMapper
         }
         if ( lowerCasedName.endsWith( "contenttype" ) )
         {
-            return this.relativeResolver.toContentTypeNameRegexp( value );
+            return this.relativeResolver.toContentTypeName( value ).toString();
         }
         else if ( lowerCasedName.endsWith( "mixintype" ) )
         {

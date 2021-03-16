@@ -59,6 +59,7 @@ public final class ApplicationRelativeResolver
         return ContentTypeName.from( this.current, name );
     }
 
+    @Deprecated
     public String toContentTypeNameRegexp( final String name )
     {
 

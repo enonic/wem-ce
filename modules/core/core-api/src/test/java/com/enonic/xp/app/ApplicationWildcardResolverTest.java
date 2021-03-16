@@ -58,8 +58,8 @@ public class ApplicationWildcardResolverTest
     @Test
     public void test_resolve_app_wildcard()
     {
-        assertEquals( "app:myapp1:folder",
-                      this.applicationWildcardResolver.resolveAppWildcard( "${app}:folder", ApplicationKey.from( "app:myapp1" ) ) );
+        assertEquals( "app.myapp1:folder",
+                      this.applicationWildcardResolver.resolveAppWildcard( "${app}:folder", ApplicationKey.from( "app.myapp1" ) ) );
     }
 
 }

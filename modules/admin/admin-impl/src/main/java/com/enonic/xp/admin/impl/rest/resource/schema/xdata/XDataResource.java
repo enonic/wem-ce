@@ -1,7 +1,5 @@
 package com.enonic.xp.admin.impl.rest.resource.schema.xdata;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -186,22 +184,11 @@ public final class XDataResource
         final ContentTypeNameWildcardResolver contentTypeNameWildcardResolver =
             new ContentTypeNameWildcardResolver( this.contentTypeService );
 
-        final List<String> allowContentTypes =
-            nullToEmpty( allowContentType ).isBlank() ? new ArrayList<>() : Collections.singletonList( allowContentType );
+        final List<String> allowContentTypes = nullToEmpty( allowContentType ).isBlank() ? List.of() : List.of( allowContentType );
 
-        if ( contentTypeNameWildcardResolver.anyTypeHasWildcard( allowContentTypes ) )
-        {
-            final ContentTypeNames validContentTypes = ContentTypeNames.from(
-                contentTypeNameWildcardResolver.resolveWildcards( allowContentTypes, xDataName.getApplicationKey() ) );
-
-            if ( validContentTypes.contains( contentTypeName ) )
-            {
-                return true;
-            }
-        }
-
-        final List<String> validContentTypes = contentTypeNameWildcardResolver.resolveContentTypeName( allowContentType );
-        return validContentTypes.contains( contentTypeName.toString() );
+        final ContentTypeNames validContentTypes =
+            ContentTypeNames.from( contentTypeNameWildcardResolver.resolveWildcards( allowContentTypes, xDataName.getApplicationKey() ) );
+        return validContentTypes.contains( contentTypeName );
     }
 
     private XDataMappings filterXDataMappingsByContentType( final XDataMappings xDataMappings, final ContentTypeName contentTypeName )

@@ -26,6 +26,7 @@
       <xs:element minOccurs="0" name="form" type="form"/>
       <xs:element minOccurs="0" name="processors" type="processors"/>
       <xs:element minOccurs="0" name="mappings" type="mappings"/>
+      <xs:element minOccurs="0" name="components" type="components"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -365,6 +366,42 @@
     <xs:sequence>
       <xs:element minOccurs="0" maxOccurs="unbounded" name="mapping" type="mapping"/>
     </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="components">
+    <xs:sequence>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="part" type="componentConfigType"/>
+      <xs:element minOccurs="0" maxOccurs="unbounded" name="layout" type="componentConfigType"/>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="componentConfigType">
+    <xs:sequence>
+      <xs:element maxOccurs="unbounded" name="match" type="descriptorPattern"/>
+      <xs:element name="allowed-on-types" minOccurs="0">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element maxOccurs="unbounded" name="content-type" type="descriptorPattern"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="descriptorPattern">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="matcher" default="relative">
+          <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:enumeration value="relative"/>
+              <xs:enumeration value="absolute"/>
+              <xs:enumeration value="legacy"/>
+            </xs:restriction>
+          </xs:simpleType>
+        </xs:attribute>
+      </xs:extension>
+    </xs:simpleContent>
   </xs:complexType>
 
   <xs:complexType name="macroType">

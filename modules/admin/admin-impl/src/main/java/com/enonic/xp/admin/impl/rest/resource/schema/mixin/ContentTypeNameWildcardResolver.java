@@ -2,14 +2,14 @@ package com.enonic.xp.admin.impl.rest.resource.schema.mixin;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.app.ApplicationWildcardResolver;
+import com.enonic.xp.page.DescriptorKey;
+import com.enonic.xp.page.DescriptorKeyMatcher;
 import com.enonic.xp.schema.content.ContentTypeService;
+import com.enonic.xp.schema.content.ContentTypes;
 
 public class ContentTypeNameWildcardResolver
 {
@@ -23,87 +23,29 @@ public class ContentTypeNameWildcardResolver
         this.applicationWildcardResolver = new ApplicationWildcardResolver();
     }
 
-    public boolean anyTypeHasWildcard( final List<String> contentTypeNames )
-    {
-        return contentTypeNames.stream().anyMatch(
-            s -> this.applicationWildcardResolver.hasAnyWildcard( s ) || this.applicationWildcardResolver.startWithAppWildcard( s ) );
-    }
-
-    public List<String> resolveContentTypeName( final String regex )
-    {
-
-        final List<String> allContentTypes = contentTypeService.
-            getAll().
-            stream().
-            map( type -> type.getName().toString() ).
-            collect( Collectors.toList() );
-
-        final Predicate<String> pattern = Pattern.compile( regex ).asPredicate();
-
-        return allContentTypes.
-            stream().
-            filter( pattern ).
-            collect( Collectors.toList() );
-    }
-
     public List<String> resolveWildcards( final List<String> namesToResolve, final ApplicationKey currentApplicationKey )
     {
         final List<String> resolvedNames = new ArrayList<>();
 
         namesToResolve.forEach( name -> {
-            if ( this.applicationWildcardResolver.hasAnyWildcard( name ) || this.applicationWildcardResolver.startWithAppWildcard( name ) )
+            if ( this.applicationWildcardResolver.hasAnyWildcard( name ) )
             {
-                String resolvedName;
-                if ( this.applicationWildcardResolver.startWithAppWildcard( name ) )
-                {
-                    resolvedName = this.applicationWildcardResolver.resolveAppWildcard( name, currentApplicationKey );
-                }
-                else
-                {
-                    resolvedName = name;
-                }
-                if ( this.applicationWildcardResolver.hasAnyWildcard( resolvedName ) )
-                {
-                    resolvedNames.addAll( this.resolveAnyWildcard( resolvedName ) );
-                }
-                else
-                {
-                    resolvedNames.add( resolvedName );
-                }
+                final DescriptorKeyMatcher descriptorKeyMatcher = DescriptorKeyMatcher.legacy( currentApplicationKey, name );
+                final ContentTypes allContentTypes = contentTypeService.getAll();
+
+                // ContentTypeName is not a DescriptorKey, but behaves equally
+                resolvedNames.addAll( allContentTypes.
+                    stream().
+                    map( type -> type.getName().toString() ).
+                    filter( contentTypeName -> descriptorKeyMatcher.matches( DescriptorKey.from( contentTypeName ) ) ).
+                    collect( Collectors.toList() ) );
             }
             else
             {
-                resolvedNames.add( name );
+                resolvedNames.add( this.applicationWildcardResolver.resolveAppWildcard( name, currentApplicationKey ) );
             }
         } );
 
         return resolvedNames;
-    }
-
-    private List<String> resolveAnyWildcard( final String nameToResolve )
-    {
-        return resolveContentTypeName( nameToResolve.replaceAll( "\\*", ".*" ) );
-    }
-
-    @Override
-    public boolean equals( final Object o )
-    {
-        if ( this == o )
-        {
-            return true;
-        }
-        if ( o == null || getClass() != o.getClass() )
-        {
-            return false;
-        }
-        final ContentTypeNameWildcardResolver that = (ContentTypeNameWildcardResolver) o;
-        return Objects.equals( contentTypeService, that.contentTypeService );
-    }
-
-    @Override
-    public int hashCode()
-    {
-
-        return Objects.hash( contentTypeService );
     }
 }

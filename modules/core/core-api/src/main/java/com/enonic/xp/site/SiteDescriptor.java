@@ -5,6 +5,7 @@ import com.enonic.xp.annotation.PublicApi;
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.form.Form;
 import com.enonic.xp.resource.ResourceKey;
+import com.enonic.xp.site.components.SiteComponentDescriptors;
 import com.enonic.xp.site.mapping.ControllerMappingDescriptors;
 import com.enonic.xp.site.processor.ResponseProcessorDescriptors;
 
@@ -21,12 +22,15 @@ public final class SiteDescriptor
 
     private final ControllerMappingDescriptors mappingDescriptors;
 
+    private final SiteComponentDescriptors siteComponentDescriptors;
+
     private SiteDescriptor( final Builder builder )
     {
         this.form = builder.form;
         this.xDataMappings = builder.xDataMappings;
         this.responseProcessors = builder.responseProcessors != null ? builder.responseProcessors : ResponseProcessorDescriptors.empty();
         this.mappingDescriptors = builder.mappingDescriptors != null ? builder.mappingDescriptors : ControllerMappingDescriptors.empty();
+        this.siteComponentDescriptors = builder.components;
     }
 
     public Form getForm()
@@ -47,6 +51,11 @@ public final class SiteDescriptor
     public ControllerMappingDescriptors getMappingDescriptors()
     {
         return mappingDescriptors;
+    }
+
+    public SiteComponentDescriptors getSiteComponents()
+    {
+        return siteComponentDescriptors;
     }
 
     public static ResourceKey toResourceKey( final ApplicationKey applicationKey )
@@ -73,6 +82,8 @@ public final class SiteDescriptor
         private ResponseProcessorDescriptors responseProcessors;
 
         private ControllerMappingDescriptors mappingDescriptors;
+
+        private SiteComponentDescriptors components;
 
         private Builder()
         {
@@ -107,6 +118,12 @@ public final class SiteDescriptor
         public Builder mappingDescriptors( final ControllerMappingDescriptors mappingDescriptors )
         {
             this.mappingDescriptors = mappingDescriptors;
+            return this;
+        }
+
+        public Builder components( final SiteComponentDescriptors components )
+        {
+            this.components = components;
             return this;
         }
 

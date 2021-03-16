@@ -9,6 +9,9 @@ import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.site.SiteDescriptor;
 import com.enonic.xp.site.XDataMapping;
 import com.enonic.xp.site.XDataMappings;
+import com.enonic.xp.site.components.DescriptorPattern;
+import com.enonic.xp.site.components.SiteComponentDescriptor;
+import com.enonic.xp.site.components.SiteComponentDescriptors;
 import com.enonic.xp.site.mapping.ControllerMappingDescriptor;
 import com.enonic.xp.site.mapping.ControllerMappingDescriptors;
 import com.enonic.xp.site.processor.ResponseProcessorDescriptor;
@@ -78,6 +81,7 @@ public final class XmlSiteParser
             ResponseProcessorDescriptors.from( parseProcessorDescriptors( root.getChild( PROCESSOR_DESCRIPTORS_PARENT_TAG_NAME ) ) ) );
         this.siteDescriptorBuilder.mappingDescriptors(
             ControllerMappingDescriptors.from( parseMappingDescriptors( root.getChild( MAPPINGS_DESCRIPTOR_TAG_NAME ) ) ) );
+        this.siteDescriptorBuilder.components( toSiteComponents( root.getChild( "components" ) ) );
     }
 
     private List<XDataMapping> parseXDatas( final DomElement root )
@@ -105,6 +109,51 @@ public final class XmlSiteParser
                 collect( Collectors.toList() );
         }
         return Collections.emptyList();
+    }
+
+    private SiteComponentDescriptors toSiteComponents( final DomElement domElement )
+    {
+        final SiteComponentDescriptors.Builder builder = SiteComponentDescriptors.create();
+        if ( domElement != null )
+        {
+            domElement.getChildren( "part" ).stream().map( this::toSiteComponentDescriptor ).forEach( builder::addPartComponentDescriptor );
+            domElement.getChildren( "layout" ).stream().map( this::toSiteComponentDescriptor ).forEach(
+                builder::addLayoutComponentDescriptor );
+        }
+        return builder.build();
+    }
+
+    private SiteComponentDescriptor toSiteComponentDescriptor( final DomElement domElement )
+    {
+        final SiteComponentDescriptor.Builder builder = SiteComponentDescriptor.create();
+        domElement.getChildren( "match" ).stream().map( this::toComponentPattern ).forEach( builder::addPattern );
+        final DomElement contentTypePermits = domElement.getChild( "allowed-on-types" );
+        if ( contentTypePermits != null )
+        {
+            contentTypePermits.getChildren( "content-type" ).stream().map( this::toComponentPattern ).forEach( builder::permitContentType );
+        }
+        return builder.build();
+    }
+
+    private DescriptorPattern toComponentPattern( final DomElement domElement )
+    {
+        final String matcherAttribute = domElement.getAttribute( "matcher", "relative" );
+        final DescriptorPattern.ComponentMatcher matcher;
+        switch ( matcherAttribute )
+        {
+            case "relative":
+                matcher = DescriptorPattern.ComponentMatcher.RELATIVE;
+                break;
+            case "absolute":
+                matcher = DescriptorPattern.ComponentMatcher.ABSOLUTE;
+                break;
+            case "legacy":
+                matcher = DescriptorPattern.ComponentMatcher.LEGACY;
+                break;
+            default:
+                throw new IllegalArgumentException( "Unknown matcher " + matcherAttribute );
+        }
+        return DescriptorPattern.create().matcher( matcher ).expression( domElement.getValue() ).build();
     }
 
     private XDataMapping toXDataMapping( final DomElement xDataElement )

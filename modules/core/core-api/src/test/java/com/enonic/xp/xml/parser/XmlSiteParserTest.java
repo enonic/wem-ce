@@ -52,6 +52,7 @@ public class XmlSiteParserTest
         assertEquals( 2, siteDescriptor.getXDataMappings().getSize() );
         assertEquals( 2, siteDescriptor.getResponseProcessors().getSize() );
         assertEquals( 0, siteDescriptor.getMappingDescriptors().getSize() );
+        assertEquals( 4, siteDescriptor.getSiteComponents().getPartSiteDescriptors().size() );
     }
 
     @Test

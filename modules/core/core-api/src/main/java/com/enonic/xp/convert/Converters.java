@@ -26,6 +26,7 @@ public final class Converters
         addConverter( new ResourceKeyConverter() );
         addConverter( new ContentPathConverter() );
         addConverter( new ContentIdConverter() );
+        addConverter( new PatternConverter() );
     }
 
     @SuppressWarnings("unchecked")
