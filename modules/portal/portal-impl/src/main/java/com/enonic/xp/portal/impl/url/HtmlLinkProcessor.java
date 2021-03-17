@@ -1,9 +1,12 @@
 package com.enonic.xp.portal.impl.url;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -12,14 +15,6 @@ import com.google.common.collect.ImmutableSet;
 
 import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.app.ApplicationKeys;
-import com.enonic.xp.content.Content;
-import com.enonic.xp.content.ContentId;
-import com.enonic.xp.content.ContentNotFoundException;
-import com.enonic.xp.content.ContentService;
-import com.enonic.xp.content.ExtraData;
-import com.enonic.xp.content.Media;
-import com.enonic.xp.data.Property;
-import com.enonic.xp.media.MediaInfo;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.url.AttachmentUrlParams;
 import com.enonic.xp.portal.url.ImageUrlParams;
@@ -40,7 +35,13 @@ public class HtmlLinkProcessor
 
     private static final int MATCH_INDEX = 1;
 
-    private static final int LINK_INDEX = MATCH_INDEX + 1;
+    private static final int TAG_NAME_INDEX = MATCH_INDEX + 1;
+
+    private static final int ATTR_INDEX = TAG_NAME_INDEX + 1;
+
+    private static final int ATTR_VALUE_INDEX = ATTR_INDEX + 1;
+
+    private static final int LINK_INDEX = ATTR_VALUE_INDEX + 1;
 
     private static final int TYPE_INDEX = LINK_INDEX + 1;
 
@@ -66,8 +67,6 @@ public class HtmlLinkProcessor
      * Parameters Keys
      */
 
-    private static final String KEEP_SIZE_PARAM = "keepSize";
-
     private static final String SCALE_PARAM = "scale";
 
     private static final String STYLE_PARAM = "style";
@@ -80,29 +79,23 @@ public class HtmlLinkProcessor
 
     private static final int DEFAULT_WIDTH = 768;
 
-    private static final String IMAGE_NO_SCALING = "full";
-
     public static final Pattern CONTENT_PATTERN = Pattern.compile(
-        "(?:href|src)=(\"((" + CONTENT_TYPE + "|" + MEDIA_TYPE + "|" + IMAGE_TYPE + ")://(?:(" + DOWNLOAD_MODE + "|" + INLINE_MODE +
-            ")/)?([0-9a-z-/]+)(\\?[^\"]+)?)\")", Pattern.MULTILINE | Pattern.UNIX_LINES );
+        "(<(\\w+)[^>]+?(href|src)=(\"((" + CONTENT_TYPE + "|" + MEDIA_TYPE + "|" + IMAGE_TYPE + ")://(?:(" + DOWNLOAD_MODE + "|" +
+            INLINE_MODE + ")/)?([0-9a-z-/]+)(\\?[^\"]+)?)\"))", Pattern.MULTILINE | Pattern.UNIX_LINES );
 
     private static final Pattern ASPECT_RATIO_PATTEN = Pattern.compile( "^(?<horizontalProportion>\\d+):(?<verticalProportion>\\d+)$" );
-
-    private final ContentService contentService;
 
     private final StyleDescriptorService styleDescriptorService;
 
     private final PortalUrlService portalUrlService;
 
-    public HtmlLinkProcessor( final ContentService contentService, final StyleDescriptorService styleDescriptorService,
-                              final PortalUrlService portalUrlService )
+    public HtmlLinkProcessor( final StyleDescriptorService styleDescriptorService, final PortalUrlService portalUrlService )
     {
-        this.contentService = contentService;
         this.styleDescriptorService = styleDescriptorService;
         this.portalUrlService = portalUrlService;
     }
 
-    public String process( final String text, final String urlType, final PortalRequest portalRequest )
+    public String process( final String text, final String urlType, final PortalRequest portalRequest, final List<Integer> imageWidths)
     {
         String processedHtml = text;
         final ImmutableMap<String, ImageStyle> imageStyleMap = getImageStyleMap( portalRequest );
@@ -112,7 +105,9 @@ public class HtmlLinkProcessor
         {
             if ( contentMatcher.groupCount() >= NB_GROUPS )
             {
-                final String match = contentMatcher.group( MATCH_INDEX );
+                final String tagName = contentMatcher.group( TAG_NAME_INDEX );
+                final String attr = contentMatcher.group( ATTR_INDEX );
+                final String attrValue = contentMatcher.group( ATTR_VALUE_INDEX );
                 final String link = contentMatcher.group( LINK_INDEX );
                 final String type = contentMatcher.group( TYPE_INDEX );
                 final String mode = contentMatcher.group( MODE_INDEX );
@@ -127,7 +122,7 @@ public class HtmlLinkProcessor
                             id( id ).
                             portalRequest( portalRequest );
                         final String pageUrl = portalUrlService.pageUrl( pageUrlParams );
-                        processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + pageUrl + "\"" );
+                        processedHtml = processedHtml.replaceFirst( Pattern.quote( attrValue ), "\"" + pageUrl + "\"" );
                         break;
                     case IMAGE_TYPE:
                         final Map<String, String> urlParams = extractUrlParams( urlParamsString );
@@ -137,13 +132,35 @@ public class HtmlLinkProcessor
                         ImageUrlParams imageUrlParams = new ImageUrlParams().
                             type( urlType ).
                             id( id ).
-                            scale( getScale( id, imageStyle, urlParams ) ).
+                            scale( getScale( imageStyle, urlParams, null ) ).
                             filter( getFilter( imageStyle ) ).
                             portalRequest( portalRequest );
 
                         final String imageUrl = portalUrlService.imageUrl( imageUrlParams );
 
-                        processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + imageUrl + "\"" );
+                        final StringBuilder replacement = new StringBuilder( "\"" + imageUrl + "\"" );
+
+                        if ( "img".equals( tagName ) && "src".equals( attr ) )
+                        {
+                            final String srcsetValues =
+                                Objects.requireNonNullElse( imageWidths, List.<Integer>of() ).stream().map( imageWidth -> {
+                                    final ImageUrlParams imageParams = new ImageUrlParams().
+                                        type( urlType ).
+                                        id( id ).
+                                        scale( getScale( imageStyle, urlParams, imageWidth ) ).
+                                        filter( getFilter( imageStyle ) ).
+                                        portalRequest( portalRequest );
+
+                                    return portalUrlService.imageUrl( imageParams ) + " " + imageWidth + "w";
+                                } ).collect( Collectors.joining( "," ) );
+
+                            if ( !srcsetValues.isEmpty() )
+                            {
+                                replacement.append( " srcset=\"" ).append( srcsetValues ).append( "\"" );
+                            }
+                        }
+
+                        processedHtml = processedHtml.replaceFirst( Pattern.quote( attrValue ), replacement.toString() );
                         break;
                     default:
                         AttachmentUrlParams attachmentUrlParams = new AttachmentUrlParams().
@@ -154,7 +171,7 @@ public class HtmlLinkProcessor
 
                         final String attachmentUrl = portalUrlService.attachmentUrl( attachmentUrlParams );
 
-                        processedHtml = processedHtml.replaceFirst( Pattern.quote( match ), "\"" + attachmentUrl + "\"" );
+                        processedHtml = processedHtml.replaceFirst( Pattern.quote( attrValue ), "\"" + attachmentUrl + "\"" );
                         break;
                 }
             }
@@ -201,10 +218,9 @@ public class HtmlLinkProcessor
         return null;
     }
 
-    private String getScale( final String id, final ImageStyle imageStyle, final Map<String, String> urlParams )
+    private String getScale( final ImageStyle imageStyle, final Map<String, String> urlParams, final Integer expectedWidth )
     {
         final String aspectRatio = getAspectRation( imageStyle, urlParams );
-        final boolean keepSize = urlParams.containsKey( KEEP_SIZE_PARAM );
 
         if ( aspectRatio != null )
         {
@@ -216,17 +232,13 @@ public class HtmlLinkProcessor
             final String horizontalProportion = matcher.group( "horizontalProportion" );
             final String verticalProportion = matcher.group( "verticalProportion" );
 
-            final int width = keepSize ? getImageOriginalWidth( id ) : DEFAULT_WIDTH;
+            final int width = Objects.requireNonNullElse( expectedWidth, DEFAULT_WIDTH );
             final int height = width / Integer.parseInt( horizontalProportion ) * Integer.parseInt( verticalProportion );
 
             return "block(" + width + "," + height + ")";
         }
 
-        if ( keepSize)
-        {
-            return IMAGE_NO_SCALING;
-        }
-        return IMAGE_SCALE;
+        return expectedWidth != null ? "width(" + expectedWidth + ")" : IMAGE_SCALE;
     }
 
     private String getFilter( final ImageStyle imageStyle )
@@ -245,40 +257,6 @@ public class HtmlLinkProcessor
             }
         }
         return urlParams.get( SCALE_PARAM );
-    }
-
-
-    private int getImageOriginalWidth( final String id )
-    {
-        final Content content = this.getContent( ContentId.from( id ) );
-
-        if ( content instanceof Media )
-        {
-            ExtraData imageData = content.getAllExtraData().getMetadata( MediaInfo.IMAGE_INFO_METADATA_NAME );
-
-            if ( imageData != null )
-            {
-                final Property widthProperty = imageData.getData().getProperty( MediaInfo.IMAGE_INFO_IMAGE_WIDTH );
-                if ( widthProperty != null )
-                {
-                    return widthProperty.getValue().asLong().intValue();
-                }
-            }
-        }
-
-        return 0;
-    }
-
-    private Content getContent( final ContentId contentId )
-    {
-        try
-        {
-            return this.contentService.getById( contentId );
-        }
-        catch ( ContentNotFoundException e )
-        {
-            return null;
-        }
     }
 
     private Map<String, String> extractUrlParams( final String urlQuery )

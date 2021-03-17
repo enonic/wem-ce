@@ -197,7 +197,7 @@ exports.processHtmlTest = function () {
 
     // NOTE: This is not the actual url. Only a mock representation.
     assert.assertEquals('ProcessHtmlParams{type=server, params={}, value=<p><a title="Link tooltip" ' +
-                        'href="content://3e266eea-9875-4cb7-b259-41ad152f8532" target="_blank">link</a></p>}', result);
+                        'href="content://3e266eea-9875-4cb7-b259-41ad152f8532" target="_blank">link</a></p>, imageWidths=[]}', result);
     return true;
 };
 
@@ -208,7 +208,20 @@ exports.processHtmlTest_unknownProperty = function () {
     });
 
     assert.assertEquals('ProcessHtmlParams{type=server, params={}, value=<p><a title="Link tooltip" ' +
-                        'href="content://3e266eea-9875-4cb7-b259-41ad152f8532" target="_blank">link</a></p>}', result);
+                        'href="content://3e266eea-9875-4cb7-b259-41ad152f8532" target="_blank">link</a></p>, imageWidths=[]}', result);
+    return true;
+};
+
+exports.processHtmlTest_imageUrlProcessing = function() {
+    var result = portal.processHtml({
+        value: '<p><figure class="editor-align-justify">' +
+                       '<img alt="Alt text" src="image://3e266eea-9875-4cb7-b259-41ad152f8532"/>' +
+                       '<figcaption>Caption text</figcaption></figure></p>',
+        imageWidths: [660, 1024]
+    });
+
+    assert.assertEquals('ProcessHtmlParams{type=server, params={}, value=<p><figure class="editor-align-justify"><img alt="Alt text" src="image://3e266eea-9875-4cb7-b259-41ad152f8532"/><figcaption>Caption text</figcaption></figure></p>, imageWidths=[660, 1024]}', result);
+
     return true;
 };
 

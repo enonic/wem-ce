@@ -3,10 +3,12 @@ package com.enonic.xp.portal.impl.url;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -81,26 +83,6 @@ public class PortalUrlServiceImpl_processHtmlTest
         final ProcessHtmlParams params = new ProcessHtmlParams().
             portalRequest( this.portalRequest ).
             value( "<a href=\"image://" + media.getId() + "\">Image</a>" );
-
-        //Checks that the page URL of the content is returned
-        final String processedHtml = this.service.processHtml( params );
-        assertEquals( "<a href=\"/site/default/draft/context/path/_/image/" + media.getId() + ":8cf45815bba82c9711c673c9bb7304039a790026/" +
-                          "width-768" + "/" + media.getName() + "\">Image</a>", processedHtml );
-    }
-
-    @Test
-    public void process_image_with_keepsize()
-    {
-        //Creates a content
-        final Media media = ContentFixtures.newMedia();
-        Mockito.when( this.contentService.getById( media.getId() ) ).thenReturn( media );
-        Mockito.when( this.contentService.getBinaryKey( media.getId(), media.getMediaAttachment().getBinaryReference() ) ).thenReturn(
-            "binaryHash" );
-
-        //Process an html text containing a link to this content
-        final ProcessHtmlParams params = new ProcessHtmlParams().
-            portalRequest( this.portalRequest ).
-            value( "<a href=\"image://" + media.getId() + "?keepsize=true\">Image</a>" );
 
         //Checks that the page URL of the content is returned
         final String processedHtml = this.service.processHtml( params );
@@ -289,12 +271,12 @@ public class PortalUrlServiceImpl_processHtmlTest
         //Process an html text containing a link to this content
         final ProcessHtmlParams params = new ProcessHtmlParams().
             portalRequest( this.portalRequest ).
-            value( "<a href=\"image://" + media.getId() + "?scale=21:9&amp;keepSize=true\">Image</a>" );
+            value( "<a href=\"image://" + media.getId() + "?scale=21:9\">Image</a>" );
 
         //Checks that the page URL of the content is returned
         final String processedHtml = this.service.processHtml( params );
         assertEquals( "<a href=\"/site/default/draft/context/path/_/image/" + media.getId() + ":8cf45815bba82c9711c673c9bb7304039a790026/" +
-                          "block-300-126" + "/" + media.getName() + "\">Image</a>", processedHtml );
+                          "block-768-324" + "/" + media.getName() + "\">Image</a>", processedHtml );
     }
 
     @Test
@@ -346,6 +328,34 @@ public class PortalUrlServiceImpl_processHtmlTest
                 "width-768" + "/" + media.getName() + "\">Image</a>";
         assertEquals( expectedResult1, processedLink1 );
         assertEquals( expectedResult2, processedLink2 );
+    }
+
+    @Test
+    public void processHtml_image_imageWidths()
+    {
+        //Creates a content
+        final Media media = ContentFixtures.newMedia();
+        Mockito.when( this.contentService.getById( media.getId() ) ).thenReturn( media );
+        Mockito.when( this.contentService.getBinaryKey( media.getId(), media.getMediaAttachment().getBinaryReference() ) ).thenReturn(
+            "binaryHash" );
+
+        //Process an html text containing a link to this content
+        final ProcessHtmlParams params = new ProcessHtmlParams().
+            portalRequest( this.portalRequest ).
+            value( "<p><figure class=\"editor-align-justify\"><img alt=\"Alt text\" src=\"image://" + media.getId() +
+                       "\"/><figcaption>Caption text</figcaption></figure></p>" ).
+            imageWidths( List.of( 660, 1024 ) );
+
+        //Checks that the page URL of the content is returned
+        final String processedHtml = this.service.processHtml( params );
+        assertEquals(
+            "<p><figure class=\"editor-align-justify\">" + "<img alt=\"Alt text\" src=\"/site/default/draft/context/path/_/image/" +
+                media.getId() + ":8cf45815bba82c9711c673c9bb7304039a790026/width-768/mycontent\" " +
+                "srcset=\"/site/default/draft/context/path/_/image/" + media.getId() +
+                ":8cf45815bba82c9711c673c9bb7304039a790026/width-660/mycontent 660w," + "/site/default/draft/context/path/_/image/" +
+                media.getId() +
+                ":8cf45815bba82c9711c673c9bb7304039a790026/width-1024/mycontent 1024w\"/><figcaption>Caption text</figcaption></figure></p>",
+            processedHtml );
     }
 
     private void assertProcessHtml( String inputName, String expectedOutputName )

@@ -126,6 +126,12 @@ public class UrlServiceScriptTest
     }
 
     @Test
+    public void processHtmlTest_imageUrlProcessing()
+    {
+        assertTrue( execute( "processHtmlTest_imageUrlProcessing" ) );
+    }
+
+    @Test
     public void imagePlaceholderTest()
     {
         assertTrue( execute( "imagePlaceholderTest" ) );

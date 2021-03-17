@@ -206,6 +206,7 @@ exports.url = function (params) {
  * @param {object} params Input parameters as JSON.
  * @param {string} params.value Html value string to process.
  * @param {string} [params.type=server] URL type. Either `server` (server-relative URL) or `absolute`.
+ * @param {number[]} [params.imageWidths] List of image width. Allows to generate image URLs for given image widths and use them in the `srcset` attribute of a `img` tag.
  *
  * @returns {string} The processed HTML.
  */

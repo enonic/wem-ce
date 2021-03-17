@@ -94,8 +94,8 @@ public final class PortalUrlServiceImpl
             return "";
         }
 
-        String processedHtml = new HtmlLinkProcessor( contentService, styleDescriptorService, this ).
-            process( params.getValue(), params.getType(), params.getPortalRequest() );
+        String processedHtml = new HtmlLinkProcessor( styleDescriptorService, this ).
+            process( params.getValue(), params.getType(), params.getPortalRequest(), params.getImageWidths() );
         processedHtml = new HtmlMacroProcessor( macroService ).
             process( processedHtml );
         return processedHtml;
